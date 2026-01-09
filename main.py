@@ -27,10 +27,10 @@ app.include_router(analytics.router)
 app.include_router(profile.router)
 
 @app.get("/")
-def read_root():
-    return {"message": "BJJ Training Journal API"}
+def serve_frontend():
+    return FileResponse("frontend.html")
 
-@app.get("/mobile.html")
+@app.get("/mobile")
 def serve_mobile():
     return FileResponse("mobile.html")
 
