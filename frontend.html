@@ -550,6 +550,10 @@
                             });
                         }
                         
+                        // Clear registration form and hide it
+                        clearRegisterForm();
+                        document.getElementById('registerForm').classList.add('hidden');
+                        
                         showMainApp();
                     } else {
                         showRegMessage('Registration successful but login failed', 'error');
