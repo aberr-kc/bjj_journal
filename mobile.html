@@ -725,15 +725,18 @@
                         <option value="Both">Both</option>
                     </select>`;
                 } else if (question.question_text === 'Training') {
-                    input = `<select id="q${question.id}" class="form-control">
+                    input = `<select id="q${question.id}" class="form-control" onchange="showTrainingDescription(this.value)">
                         <option value="">Select training type</option>
-                        <option value="Skill development">Skill development</option>
-                        <option value="Rest session">Rest session</option>
-                        <option value="Drilling">Drilling</option>
-                        <option value="High Intensity">High Intensity</option>
-                        <option value="Competition Rounds">Competition Rounds</option>
-                        <option value="Social">Social</option>
-                    </select>`;
+                        <option value="Regular Class">Regular Class</option>
+                        <option value="Open Mat">Open Mat</option>
+                        <option value="Competition Training">Competition Training</option>
+                        <option value="Drilling Session">Drilling Session</option>
+                        <option value="Private Lesson">Private Lesson</option>
+                        <option value="Seminar/Workshop">Seminar/Workshop</option>
+                        <option value="Light Training">Light Training</option>
+                        <option value="Competition">Competition</option>
+                    </select>
+                    <div id="trainingDescription" style="font-size: 12px; color: #8a9ba8; margin-top: 5px; font-style: italic;"></div>`;
                 } else if (question.question_type === 'rating') {
                     input = `<select id="q${question.id}" class="form-control">
                         <option value="">Select rating</option>
@@ -994,6 +997,24 @@
             // RPE vs Rounds Correlation - REMOVED
             
             chartsContainer.innerHTML += advancedHTML;
+        }
+        
+        function showTrainingDescription(value) {
+            const descriptions = {
+                'Regular Class': 'Structured class with warm-up, technique, and rolling',
+                'Open Mat': 'Free training time for drilling and rolling',
+                'Competition Training': 'High-intensity preparation for tournaments',
+                'Drilling Session': 'Focused repetition of specific techniques',
+                'Private Lesson': 'One-on-one instruction with coach',
+                'Seminar/Workshop': 'Special technique session or guest instructor',
+                'Light Training': 'Easy session for recovery or injury management',
+                'Competition': 'Tournament or competition day'
+            };
+            
+            const descDiv = document.getElementById('trainingDescription');
+            if (descDiv) {
+                descDiv.textContent = descriptions[value] || '';
+            }
         }
         
         function showDashboard() {
