@@ -1,0 +1,1114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BJJ Training Journal</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background: #0f1419; 
+            color: #ffffff; 
+            line-height: 1.6;
+        }
+        .container { max-width: 100%; margin: 0 auto; padding: 15px; }
+        .header {
+            background: #1a1f26;
+            padding: 15px 0;
+            border-bottom: 1px solid #2a3038;
+            margin-bottom: 20px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 15px;
+        }
+        .logo { font-size: 20px; font-weight: bold; color: #00d4aa; }
+        .user-menu { display: flex; gap: 8px; align-items: center; }
+        .btn {
+            background: #00d4aa;
+            color: #0f1419;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 13px;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+        .btn:hover, .btn:active { background: #00b894; transform: translateY(-1px); }
+        .btn-secondary {
+            background: #2a3038;
+            color: #ffffff;
+            padding: 8px 12px;
+            font-size: 12px;
+        }
+        .btn-secondary:hover, .btn-secondary:active { background: #3a4048; }
+        .card {
+            background: #1a1f26;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border: 1px solid #2a3038;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #2a3038;
+        }
+        .card-title { font-size: 16px; font-weight: 600; color: #ffffff; }
+        .activity-card {
+            background: linear-gradient(135deg, #1a1f26 0%, #252b34 100%);
+            border-left: 4px solid #00d4aa;
+            transition: transform 0.2s ease;
+        }
+        .activity-card:hover { transform: translateY(-2px); }
+        .activity-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .activity-date {
+            font-size: 14px;
+            color: #8a9ba8;
+            font-weight: 500;
+        }
+        .activity-type {
+            background: #00d4aa;
+            color: #0f1419;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .stat-item {
+            background: #252b34;
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .stat-label {
+            font-size: 12px;
+            color: #8a9ba8;
+            margin-bottom: 4px;
+        }
+        .stat-value {
+            font-size: 16px;
+            font-weight: 600;
+            color: #ffffff;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 500;
+            color: #8a9ba8;
+            font-size: 14px;
+        }
+        .form-control {
+            width: 100%;
+            padding: 12px 16px;
+            background: #252b34;
+            border: 1px solid #3a4048;
+            border-radius: 8px;
+            color: #ffffff;
+            font-size: 16px;
+        }
+        .form-control:focus {
+            outline: none;
+            border-color: #00d4aa;
+            box-shadow: 0 0 0 2px rgba(0, 212, 170, 0.2);
+        }
+        .login-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #0f1419 0%, #1a1f26 100%);
+            padding: 20px;
+        }
+        .login-card {
+            background: #1a1f26;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            width: 100%;
+            max-width: 400px;
+        }
+        .login-title {
+            text-align: center;
+            margin-bottom: 25px;
+            font-size: 24px;
+            font-weight: 700;
+            color: #00d4aa;
+        }
+        .edit-btn {
+            background: none;
+            border: 1px solid #00d4aa;
+            color: #00d4aa;
+            padding: 6px 12px;
+            border-radius: 15px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .edit-btn:hover, .edit-btn:active {
+            background: #00d4aa;
+            color: #0f1419;
+        }
+        .hidden { display: none; }
+        .message {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-weight: 500;
+        }
+        .success {
+            background: rgba(0, 212, 170, 0.1);
+            color: #00d4aa;
+            border: 1px solid #00d4aa;
+        }
+        .error {
+            background: rgba(255, 107, 107, 0.1);
+            color: #ff6b6b;
+            border: 1px solid #ff6b6b;
+        }
+        .nav-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .dashboard-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .response-item {
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #2a3038;
+        }
+        .response-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        .response-question {
+            font-size: 12px;
+            color: #8a9ba8;
+            margin-bottom: 5px;
+        }
+        .response-answer {
+            color: #ffffff;
+            font-weight: 500;
+        }
+        @media (max-width: 480px) {
+            .user-menu { gap: 5px; }
+            .btn { padding: 8px 12px; font-size: 12px; }
+            .btn-secondary { padding: 6px 10px; font-size: 11px; }
+            .logo { font-size: 18px; }
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <!-- Login Form -->
+        <div id="loginForm" class="login-container">
+            <div class="login-card">
+                <h1 class="login-title">BJJ Training Journal</h1>
+                <div class="form-group">
+                    <label>Username:</label>
+                    <input type="text" id="username" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label>Password:</label>
+                    <input type="password" id="password" class="form-control" required>
+                </div>
+                <div class="form-group" style="display: flex; align-items: center; gap: 8px;">
+                    <input type="checkbox" id="rememberMe" style="width: auto; margin: 0;">
+                    <label for="rememberMe" style="margin: 0; color: #8a9ba8; font-size: 14px;">Remember me</label>
+                </div>
+                <button onclick="login()" class="btn" style="width: 100%; margin-bottom: 10px;">Login</button>
+                <button onclick="register()" class="btn btn-secondary" style="width: 100%;">Register</button>
+                <div id="authMessage"></div>
+            </div>
+        </div>
+
+        <!-- Main App -->
+        <div id="mainApp" class="hidden">
+            <div class="header">
+                <div class="header-content">
+                    <div class="logo">BJJ Journal</div>
+                    <div class="user-menu">
+                        <button onclick="toggleEntryForm()" class="btn">+ New</button>
+                        <button onclick="showDashboard()" class="btn btn-secondary">Dashboard</button>
+                        <button onclick="showEntries()" class="btn btn-secondary">Activities</button>
+                        <button onclick="showProfile()" class="btn btn-secondary">Profile</button>
+                        <button onclick="logout()" class="btn btn-secondary">Logout</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="container">
+                <!-- Dashboard -->
+                <div id="dashboard">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Training Overview</h3>
+                            <select id="periodFilter" class="form-control" style="width: auto; padding: 6px 12px; font-size: 12px;" onchange="filterDashboard()">
+                                <option value="7d">Past 7 Days</option>
+                                <option value="30d" selected>Past 30 Days</option>
+                                <option value="this_month">This Month</option>
+                                <option value="6m">6 Months</option>
+                                <option value="1y">1 Year</option>
+                                <option value="all">All Time</option>
+                            </select>
+                        </div>
+                        <div id="dashboardStats" class="dashboard-stats">
+                            <!-- Stats cards will be populated here -->
+                        </div>
+                    </div>
+                    <div id="dashboardCharts">
+                        <!-- Charts will be populated here -->
+                    </div>
+                </div>
+                
+                <!-- Entry Form -->
+                <div id="entryForm" class="hidden">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 id="formTitle" class="card-title">New Training Activity</h3>
+                        </div>
+                        <div class="form-group">
+                            <label>Date:</label>
+                            <input type="date" id="entryDate" class="form-control" required>
+                        </div>
+                        <div id="questions"></div>
+                        <div class="nav-buttons" style="margin-top: 20px;">
+                            <button onclick="saveEntry()" class="btn">Save Activity</button>
+                            <button onclick="cancelEdit()" class="btn btn-secondary">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Activities List -->
+                <div id="activitiesSection" class="hidden">
+                    <div id="entriesList"></div>
+                </div>
+                
+                <!-- Profile Section -->
+                <div id="profileSection" class="hidden">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 id="profileTitle" class="card-title">Profile</h3>
+                        </div>
+                        <div class="form-group">
+                            <label>Name:</label>
+                            <input type="text" id="profileName" class="form-control" placeholder="Your name">
+                        </div>
+                        <div class="form-group">
+                            <label>Age:</label>
+                            <input type="number" id="profileAge" class="form-control" placeholder="Age" min="1" max="100">
+                        </div>
+                        <div class="form-group">
+                            <label>Weight (kg):</label>
+                            <input type="number" id="profileWeight" class="form-control" placeholder="Weight in kg" step="0.1">
+                        </div>
+                        <div class="form-group">
+                            <label>Height (cm):</label>
+                            <input type="number" id="profileHeight" class="form-control" placeholder="Height in cm">
+                        </div>
+                        <div class="form-group">
+                            <label>Belt:</label>
+                            <select id="profileBelt" class="form-control">
+                                <option value="">Select belt</option>
+                                <option value="White">White</option>
+                                <option value="Blue">Blue</option>
+                                <option value="Purple">Purple</option>
+                                <option value="Brown">Brown</option>
+                                <option value="Black">Black</option>
+                            </select>
+                        </div>
+                        <div class="nav-buttons">
+                            <button onclick="saveProfile()" class="btn">Save Profile</button>
+                            <button onclick="cancelProfile()" class="btn btn-secondary">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize app with improved credential loading
+        function initializeApp() {
+            if (token) {
+                showMainApp();
+                return;
+            }
+            
+            // Try to load saved credentials
+            setTimeout(() => {
+                try {
+                    const usernameField = document.getElementById('username');
+                    const passwordField = document.getElementById('password');
+                    const rememberField = document.getElementById('rememberMe');
+                    
+                    if (!usernameField || !passwordField || !rememberField) return;
+                    
+                    // Check for any saved credentials
+                    const keys = Object.keys(localStorage).filter(key => key.startsWith('bjj_credentials_'));
+                    if (keys.length > 0) {
+                        const latestKey = keys[keys.length - 1];
+                        const username = latestKey.replace('bjj_credentials_', '');
+                        const credentials = loadCredentials(username);
+                        
+                        if (credentials) {
+                            usernameField.value = credentials.username;
+                            passwordField.value = credentials.password;
+                            rememberField.checked = true;
+                        }
+                    }
+                } catch (error) {
+                    console.error('Failed to initialize credentials:', error);
+                }
+            }, 100);
+        }
+        
+        // Initialize when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initializeApp);
+        } else {
+            initializeApp();
+        }
+
+        // Storage utilities with error handling
+        function saveCredentials(username, password) {
+            if (!username || !password) return false;
+            try {
+                if (typeof(Storage) === "undefined") return false;
+                const credentials = {
+                    username: username,
+                    password: password,
+                    timestamp: Date.now(),
+                    expires: Date.now() + (30 * 24 * 60 * 60 * 1000) // 30 days
+                };
+                localStorage.setItem(`bjj_credentials_${username.toLowerCase()}`, JSON.stringify(credentials));
+                return true;
+            } catch (error) {
+                console.error('Failed to save credentials:', error);
+                return false;
+            }
+        }
+        
+        function loadCredentials(username) {
+            if (!username) return null;
+            try {
+                if (typeof(Storage) === "undefined") return null;
+                const stored = localStorage.getItem(`bjj_credentials_${username.toLowerCase()}`);
+                if (!stored) return null;
+                
+                const credentials = JSON.parse(stored);
+                if (Date.now() > credentials.expires) {
+                    clearCredentials(username);
+                    return null;
+                }
+                return credentials;
+            } catch (error) {
+                console.error('Failed to load credentials:', error);
+                return null;
+            }
+        }
+        
+        function clearCredentials(username) {
+            if (!username) return;
+            try {
+                if (typeof(Storage) !== "undefined") {
+                    localStorage.removeItem(`bjj_credentials_${username.toLowerCase()}`);
+                }
+            } catch (error) {
+                console.error('Failed to clear credentials:', error);
+            }
+        }
+
+        async function register() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            try {
+                const response = await fetch(`${API_BASE}/auth/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+                
+                if (response.ok) {
+                    showMessage('Registration successful! Please login.', 'success');
+                } else {
+                    const error = await response.json();
+                    showMessage('Registration failed: ' + (error.detail || 'Unknown error'), 'error');
+                }
+            } catch (error) {
+                showMessage('Error: ' + error.message, 'error');
+            }
+        }
+
+        const API_BASE = window.location.origin;
+        let token = localStorage.getItem('bjj_token');
+        let questions = [];
+        let editingEntry = null;
+        let dashboardData = null;
+
+        async function login() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const rememberMe = document.getElementById('rememberMe').checked;
+            
+            if (!username || !password) {
+                showMessage('Please enter username and password', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    token = data.access_token;
+                    localStorage.setItem('bjj_token', token);
+                    
+                    // Save credentials immediately after successful login
+                    if (rememberMe) {
+                        const saved = saveCredentials(username, password);
+                        if (!saved) {
+                            console.warn('Failed to save credentials');
+                        }
+                    } else {
+                        clearCredentials(username);
+                    }
+                    
+                    showMainApp();
+                } else {
+                    const error = await response.json();
+                    showMessage('Login failed: ' + (error.detail || 'Unknown error'), 'error');
+                    // Clear invalid credentials
+                    clearCredentials(username);
+                }
+            } catch (error) {
+                showMessage('Error: ' + error.message, 'error');
+                clearCredentials(username);
+            }
+        }
+
+        function logout() {
+            const username = document.getElementById('username')?.value;
+            localStorage.removeItem('bjj_token');
+            if (username) {
+                clearCredentials(username);
+            }
+            token = null;
+            document.getElementById('loginForm').classList.remove('hidden');
+            document.getElementById('mainApp').classList.add('hidden');
+        }
+
+        async function showMainApp() {
+            document.getElementById('loginForm').classList.add('hidden');
+            document.getElementById('mainApp').classList.remove('hidden');
+            await loadQuestions();
+            await loadDashboard();
+            await checkProfileOnLogin();
+        }
+
+        async function loadQuestions() {
+            try {
+                const response = await fetch(`${API_BASE}/questions/`);
+                questions = await response.json();
+                renderQuestionForm();
+            } catch (error) {
+                console.error('Failed to load questions:', error);
+            }
+        }
+
+        function renderQuestionForm() {
+            const container = document.getElementById('questions');
+            container.innerHTML = '';
+            
+            questions.forEach(question => {
+                const div = document.createElement('div');
+                div.className = 'form-group';
+                
+                let input = '';
+                if (question.question_text === 'Session Type') {
+                    input = `<select id="q${question.id}" class="form-control">
+                        <option value="">Select session type</option>
+                        <option value="Gi">Gi</option>
+                        <option value="No Gi">No Gi</option>
+                        <option value="Both">Both</option>
+                    </select>`;
+                } else if (question.question_text === 'Training') {
+                    input = `<select id="q${question.id}" class="form-control">
+                        <option value="">Select training type</option>
+                        <option value="Skill development">Skill development</option>
+                        <option value="Rest session">Rest session</option>
+                        <option value="Drilling">Drilling</option>
+                        <option value="High Intensity">High Intensity</option>
+                        <option value="Competition Rounds">Competition Rounds</option>
+                        <option value="Social">Social</option>
+                    </select>`;
+                } else if (question.question_type === 'rating') {
+                    input = `<select id="q${question.id}" class="form-control">
+                        <option value="">Select rating</option>
+                        ${[1,2,3,4,5,6,7,8,9].map(n => `<option value="${n}">${n}</option>`).join('')}
+                    </select>`;
+                } else if (question.question_text === 'Rounds Rolled') {
+                    input = `<input type="number" id="q${question.id}" class="form-control" min="0" max="20" placeholder="Number of rounds">`;
+                } else if (question.question_text === 'Summarise this session with a few words') {
+                    input = `<input type="text" id="q${question.id}" class="form-control" maxlength="100">`;
+                } else if (question.question_text === 'Journal Notes') {
+                    input = `<textarea id="q${question.id}" class="form-control" rows="4" placeholder="Enter each note on a new line"></textarea>`;
+                } else {
+                    input = `<textarea id="q${question.id}" class="form-control" rows="3"></textarea>`;
+                }
+                
+                div.innerHTML = `<label>${question.question_text}:</label>${input}`;
+                container.appendChild(div);
+            });
+        }
+
+        async function saveEntry() {
+            const entryDate = document.getElementById('entryDate').value;
+            if (!entryDate) {
+                alert('Please select a date');
+                return;
+            }
+            
+            const responses = [];
+            
+            questions.forEach(question => {
+                const value = document.getElementById(`q${question.id}`).value;
+                if (value) {
+                    responses.push({
+                        question_id: question.id,
+                        answer: value
+                    });
+                }
+            });
+            
+            const entryData = {
+                date: new Date(entryDate + 'T12:00:00').toISOString(),
+                session_type: 'training',
+                responses: responses
+            };
+            
+            try {
+                let response;
+                if (editingEntry) {
+                    response = await fetch(`${API_BASE}/entries/${editingEntry.id}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify(entryData)
+                    });
+                } else {
+                    response = await fetch(`${API_BASE}/entries/`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify(entryData)
+                    });
+                }
+                
+                if (response.ok) {
+                    editingEntry = null;
+                    document.getElementById('entryForm').classList.add('hidden');
+                    showEntries();
+                    loadDashboard();
+                    showMessage(editingEntry ? 'Entry updated successfully!' : 'Entry saved successfully!', 'success');
+                } else {
+                    showMessage('Failed to save entry', 'error');
+                }
+            } catch (error) {
+                showMessage('Connection error', 'error');
+            }
+        }
+
+        async function loadDashboard() {
+            try {
+                const period = document.getElementById('periodFilter')?.value || '30d';
+                const response = await fetch(`${API_BASE}/analytics/dashboard?period=${period}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (response.ok) {
+                    dashboardData = await response.json();
+                    renderDashboard();
+                }
+            } catch (error) {
+                console.error('Failed to load dashboard:', error);
+            }
+        }
+        
+        function filterDashboard() {
+            loadDashboard();
+        }
+
+        function renderDashboard() {
+            if (!dashboardData) return;
+            
+            const statsContainer = document.getElementById('dashboardStats');
+            statsContainer.innerHTML = `
+                <div class="stat-item">
+                    <div class="stat-label">Total Sessions</div>
+                    <div class="stat-value">${dashboardData.total_sessions}</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Average RPE</div>
+                    <div class="stat-value">${dashboardData.avg_rpe}/9</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Total Rounds</div>
+                    <div class="stat-value">${dashboardData.total_rounds}</div>
+                </div>
+            `;
+            
+            renderCharts();
+        }
+        
+        function renderCharts() {
+            const chartsContainer = document.getElementById('dashboardCharts');
+            let chartsHTML = '';
+            
+            if (Object.keys(dashboardData.session_types).length > 0) {
+                chartsHTML += `
+                    <div class="card">
+                        <div class="card-header">
+                            <h4 class="card-title">Session Types</h4>
+                        </div>
+                        <div class="dashboard-stats">
+                `;
+                
+                for (const [type, count] of Object.entries(dashboardData.session_types)) {
+                    const percentage = ((count / dashboardData.total_sessions) * 100).toFixed(1);
+                    chartsHTML += `
+                        <div class="stat-item">
+                            <div class="stat-label">${type}</div>
+                            <div class="stat-value">${count} (${percentage}%)</div>
+                        </div>
+                    `;
+                }
+                
+                chartsHTML += `</div></div>`;
+            }
+            
+            if (Object.keys(dashboardData.training_types).length > 0) {
+                chartsHTML += `
+                    <div class="card">
+                        <div class="card-header">
+                            <h4 class="card-title">Training Types</h4>
+                        </div>
+                        <div class="dashboard-stats">
+                `;
+                
+                for (const [type, count] of Object.entries(dashboardData.training_types)) {
+                    const percentage = ((count / dashboardData.total_sessions) * 100).toFixed(1);
+                    chartsHTML += `
+                        <div class="stat-item">
+                            <div class="stat-label">${type}</div>
+                            <div class="stat-value">${count} (${percentage}%)</div>
+                        </div>
+                    `;
+                }
+                
+                chartsHTML += `</div></div>`;
+            }
+            
+            chartsContainer.innerHTML = chartsHTML;
+            
+            // Add new advanced charts
+            renderAdvancedCharts();
+        }
+        
+        function renderAdvancedCharts() {
+            const chartsContainer = document.getElementById('dashboardCharts');
+            let advancedHTML = '';
+            
+            // RPE Trend Line
+            if (dashboardData.rpe_trend && dashboardData.rpe_trend.length > 0) {
+                advancedHTML += `
+                    <div class="card">
+                        <div class="card-header">
+                            <h4 class="card-title">RPE Trend (Last 10 Sessions)</h4>
+                        </div>
+                        <div style="padding: 10px; background: #252b34; border-radius: 8px; margin: 10px 0;">
+                            <div style="display: flex; justify-content: space-between; align-items: end; height: 100px; border-bottom: 1px solid #3a4048; padding-bottom: 10px;">
+                `;
+                
+                const maxRpe = Math.max(...dashboardData.rpe_trend.map(d => d.rpe));
+                dashboardData.rpe_trend.forEach((data, index) => {
+                    const height = (data.rpe / maxRpe) * 80;
+                    advancedHTML += `
+                        <div style="display: flex; flex-direction: column; align-items: center; flex: 1;">
+                            <div style="font-size: 11px; color: #00d4aa; font-weight: 600; margin-bottom: 3px;">${data.rpe}</div>
+                            <div style="width: 4px; background: #00d4aa; height: ${height}px; margin-bottom: 5px; border-radius: 2px;"></div>
+                            <div style="font-size: 10px; color: #8a9ba8; transform: rotate(-45deg); white-space: nowrap;">${data.date}</div>
+                        </div>
+                    `;
+                });
+                
+                advancedHTML += `</div></div></div>`;
+            }
+            
+            // Weekly Training Volume
+            if (dashboardData.weekly_volume && dashboardData.weekly_volume.length > 0) {
+                advancedHTML += `
+                    <div class="card">
+                        <div class="card-header">
+                            <h4 class="card-title">Weekly Training Volume</h4>
+                        </div>
+                        <div class="dashboard-stats">
+                `;
+                
+                dashboardData.weekly_volume.forEach(week => {
+                    advancedHTML += `
+                        <div class="stat-item">
+                            <div class="stat-label">${week.week}</div>
+                            <div style="font-size: 10px; color: #8a9ba8; margin-bottom: 3px;">${week.date_range}</div>
+                            <div class="stat-value">${week.rounds} rounds</div>
+                            <div style="font-size: 12px; color: #8a9ba8;">${week.sessions} sessions</div>
+                        </div>
+                    `;
+                });
+                
+                advancedHTML += `</div></div>`;
+            }
+            
+            // Rounds by Session Type
+            if (dashboardData.rounds_by_session_type && Object.keys(dashboardData.rounds_by_session_type).length > 0) {
+                advancedHTML += `
+                    <div class="card">
+                        <div class="card-header">
+                            <h4 class="card-title">Rounds by Session Type</h4>
+                        </div>
+                        <div style="padding: 10px; background: #252b34; border-radius: 8px; margin: 10px 0;">
+                            <div style="display: flex; justify-content: space-between; align-items: end; height: 80px; border-bottom: 1px solid #3a4048; padding-bottom: 10px;">
+                `;
+                
+                const maxRounds = Math.max(...Object.values(dashboardData.rounds_by_session_type));
+                Object.entries(dashboardData.rounds_by_session_type).forEach(([sessionType, rounds]) => {
+                    const height = maxRounds > 0 ? (rounds / maxRounds) * 60 : 0;
+                    advancedHTML += `
+                        <div style="display: flex; flex-direction: column; align-items: center; flex: 1;">
+                            <div style="width: 20px; background: #00d4aa; height: ${height}px; margin-bottom: 5px; border-radius: 2px;"></div>
+                            <div style="font-size: 12px; color: #ffffff;">${sessionType}</div>
+                            <div style="font-size: 10px; color: #8a9ba8;">${rounds} rounds</div>
+                        </div>
+                    `;
+                });
+                
+                advancedHTML += `</div></div></div>`;
+            }
+            
+            // RPE vs Rounds Correlation - REMOVED
+            
+            chartsContainer.innerHTML += advancedHTML;
+        }
+        
+        function showDashboard() {
+            document.getElementById('dashboard').classList.remove('hidden');
+            document.getElementById('activitiesSection').classList.add('hidden');
+            document.getElementById('entryForm').classList.add('hidden');
+            document.getElementById('profileSection').classList.add('hidden');
+        }
+        
+        function showEntries() {
+            document.getElementById('dashboard').classList.add('hidden');
+            document.getElementById('activitiesSection').classList.remove('hidden');
+            document.getElementById('entryForm').classList.add('hidden');
+            document.getElementById('profileSection').classList.add('hidden');
+            loadEntries();
+        }
+        
+        function showProfile() {
+            document.getElementById('dashboard').classList.add('hidden');
+            document.getElementById('activitiesSection').classList.add('hidden');
+            document.getElementById('entryForm').classList.add('hidden');
+            document.getElementById('profileSection').classList.remove('hidden');
+            loadProfile();
+        }
+
+        async function loadEntries() {
+            try {
+                const response = await fetch(`${API_BASE}/entries/`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (response.ok) {
+                    const entries = await response.json();
+                    renderEntries(entries);
+                }
+            } catch (error) {
+                console.error('Failed to load entries:', error);
+            }
+        }
+
+        function renderEntries(entries) {
+            const container = document.getElementById('entriesList');
+            container.innerHTML = '';
+            
+            // Sort entries by date (most recent first), then by created_at for same dates
+            entries.sort((a, b) => {
+                const dateA = new Date(a.date);
+                const dateB = new Date(b.date);
+                if (dateA.getTime() === dateB.getTime()) {
+                    return new Date(b.created_at) - new Date(a.created_at);
+                }
+                return dateB - dateA;
+            });
+            
+            entries.forEach(entry => {
+                const div = document.createElement('div');
+                div.className = 'card activity-card';
+                
+                const entryDate = new Date(entry.date);
+                const day = String(entryDate.getDate()).padStart(2, '0');
+                const month = String(entryDate.getMonth() + 1).padStart(2, '0');
+                const year = String(entryDate.getFullYear()).slice(-2);
+                const formattedDate = `${day}/${month}/${year}`;
+                
+                let html = `
+                    <div style="position: relative;">
+                        <div style="position: absolute; top: 0; right: 0; display: flex; gap: 8px;">
+                            <button onclick="editEntry(${entry.id})" class="edit-btn">Edit</button>
+                            <button onclick="deleteEntry(${entry.id})" class="edit-btn" style="border-color: #ff6b6b; color: #ff6b6b;">Delete</button>
+                        </div>
+                        <div class="activity-date">${formattedDate}</div>
+                        <h4 style="margin: 5px 0 15px 0; color: #ffffff;">BJJ Training Session</h4>
+                    </div>
+                    <div>
+                `;
+                
+                entry.responses.forEach(response => {
+                    if (response.answer.trim()) {
+                        let displayAnswer = response.answer;
+                        if (response.question.question_text === 'Journal Notes') {
+                            // Convert lines to bullet points for display
+                            const lines = response.answer.split('\n').filter(line => line.trim());
+                            displayAnswer = lines.map(line => `• ${line.trim()}`).join('<br>');
+                        }
+                        html += `
+                            <div class="response-item">
+                                <div class="response-question">${response.question.question_text}</div>
+                                <div class="response-answer">${displayAnswer}</div>
+                            </div>
+                        `;
+                    }
+                });
+                
+                html += `</div>`;
+                
+                div.innerHTML = html;
+                container.appendChild(div);
+            });
+        }
+
+        function toggleEntryForm() {
+            // First switch to activities section
+            document.getElementById('dashboard').classList.add('hidden');
+            document.getElementById('activitiesSection').classList.remove('hidden');
+            
+            const form = document.getElementById('entryForm');
+            form.classList.remove('hidden');
+            
+            if (!editingEntry) {
+                const today = new Date().toISOString().split('T')[0];
+                document.getElementById('entryDate').value = today;
+                document.getElementById('formTitle').textContent = 'New Training Entry';
+                
+                questions.forEach(question => {
+                    document.getElementById(`q${question.id}`).value = '';
+                });
+            }
+        }
+
+        async function editEntry(entryId) {
+            try {
+                const response = await fetch(`${API_BASE}/entries/${entryId}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (response.ok) {
+                    const entry = await response.json();
+                    editingEntry = entry;
+                    
+                    document.getElementById('entryForm').classList.remove('hidden');
+                    document.getElementById('formTitle').textContent = 'Edit Training Entry';
+                    
+                    const entryDate = new Date(entry.date);
+                    const year = entryDate.getFullYear();
+                    const month = String(entryDate.getMonth() + 1).padStart(2, '0');
+                    const day = String(entryDate.getDate()).padStart(2, '0');
+                    const dateString = `${year}-${month}-${day}`;
+                    document.getElementById('entryDate').value = dateString;
+                    
+                    setTimeout(() => {
+                        entry.responses.forEach(response => {
+                            const element = document.getElementById(`q${response.question_id}`);
+                            if (element) {
+                                element.value = response.answer;
+                                if (element.tagName === 'SELECT') {
+                                    element.dispatchEvent(new Event('change'));
+                                }
+                            }
+                        });
+                    }, 200);
+                }
+            } catch (error) {
+                showMessage('Failed to load entry', 'error');
+            }
+        }
+
+        async function deleteEntry(entryId) {
+            if (!confirm('Are you sure you want to delete this training entry?')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/entries/${entryId}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (response.ok) {
+                    showMessage('Entry deleted successfully!', 'success');
+                    loadEntries();
+                    loadDashboard(); // Refresh dashboard stats
+                } else {
+                    showMessage('Failed to delete entry', 'error');
+                }
+            } catch (error) {
+                showMessage('Connection error', 'error');
+            }
+        }
+
+        function cancelEdit() {
+            editingEntry = null;
+            document.getElementById('formTitle').textContent = 'New Training Entry';
+            toggleEntryForm();
+        }
+
+        function showMessage(message, type) {
+            const messageDiv = document.getElementById('authMessage');
+            messageDiv.innerHTML = `<div class="message ${type}">${message}</div>`;
+            setTimeout(() => messageDiv.innerHTML = '', 3000);
+        }
+
+        async function loadProfile() {
+            try {
+                const response = await fetch(`${API_BASE}/profile/`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (response.ok) {
+                    const profile = await response.json();
+                    document.getElementById('profileName').value = profile.name || '';
+                    document.getElementById('profileAge').value = profile.age || '';
+                    document.getElementById('profileWeight').value = profile.weight || '';
+                    document.getElementById('profileHeight').value = profile.height || '';
+                    document.getElementById('profileBelt').value = profile.belt || '';
+                } else if (response.status === 404) {
+                    // Profile doesn't exist, show empty form
+                    clearProfileForm();
+                }
+            } catch (error) {
+                console.error('Failed to load profile:', error);
+                clearProfileForm();
+            }
+        }
+        
+        function clearProfileForm() {
+            document.getElementById('profileName').value = '';
+            document.getElementById('profileAge').value = '';
+            document.getElementById('profileWeight').value = '';
+            document.getElementById('profileHeight').value = '';
+            document.getElementById('profileBelt').value = '';
+        }
+        
+        async function saveProfile() {
+            const profileData = {
+                name: document.getElementById('profileName').value || null,
+                age: parseInt(document.getElementById('profileAge').value) || null,
+                weight: parseFloat(document.getElementById('profileWeight').value) || null,
+                height: parseFloat(document.getElementById('profileHeight').value) || null,
+                belt: document.getElementById('profileBelt').value || null
+            };
+            
+            try {
+                const response = await fetch(`${API_BASE}/profile/`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(profileData)
+                });
+                
+                if (response.ok) {
+                    showMessage('Profile saved successfully!', 'success');
+                    setTimeout(() => showDashboard(), 1000);
+                } else {
+                    showMessage('Failed to save profile', 'error');
+                }
+            } catch (error) {
+                showMessage('Connection error', 'error');
+            }
+        }
+        
+        function cancelProfile() {
+            showDashboard();
+        }
+        
+        async function checkProfileOnLogin() {
+            try {
+                const response = await fetch(`${API_BASE}/profile/exists`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    if (!data.exists) {
+                        showProfile();
+                        return;
+                    }
+                }
+            } catch (error) {
+                console.error('Failed to check profile:', error);
+            }
+            showDashboard();
+        }
+    </script>
+</body>
+</html>

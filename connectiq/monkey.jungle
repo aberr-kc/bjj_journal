@@ -1,0 +1,4 @@
+project.manifest = manifest.xml
+
+vivoactive4.resourcePath = resources
+vivoactive4.sourcePath = source
