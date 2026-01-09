@@ -218,6 +218,31 @@
             color: #ffffff;
             font-weight: 500;
         }
+        .technique-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: #252b34;
+            border: 1px solid #3a4048;
+            border-radius: 8px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+        }
+        .technique-option {
+            padding: 10px 16px;
+            cursor: pointer;
+            border-bottom: 1px solid #3a4048;
+            color: #ffffff;
+            font-size: 14px;
+        }
+        .technique-option:hover, .technique-option:active {
+            background: #3a4048;
+        }
+        .technique-option:last-child {
+            border-bottom: none;
+        }
         @media (max-width: 480px) {
             .user-menu { gap: 5px; }
             .btn { padding: 8px 12px; font-size: 12px; }
@@ -738,10 +763,19 @@
                     </select>
                     <div id="trainingDescription" style="font-size: 12px; color: #8a9ba8; margin-top: 5px; font-style: italic;"></div>`;
                 } else if (question.question_type === 'rating') {
-                    input = `<select id="q${question.id}" class="form-control">
+                    input = `<select id="q${question.id}" class="form-control" onchange="showRPEDescription(this.value)">
                         <option value="">Select rating</option>
-                        ${[1,2,3,4,5,6,7,8,9].map(n => `<option value="${n}">${n}</option>`).join('')}
-                    </select>`;
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                        <option value="6">6</option>
+                        <option value="7">7</option>
+                        <option value="8">8</option>
+                        <option value="9">9</option>
+                    </select>
+                    <div id="rpeDescription" style="font-size: 12px; color: #8a9ba8; margin-top: 5px; font-style: italic;"></div>`;
                 } else if (question.question_text === 'Rounds Rolled') {
                     input = `<input type="number" id="q${question.id}" class="form-control" min="0" max="20" placeholder="Number of rounds">`;
                 } else if (question.question_text === 'Summarise this session with a few words') {
@@ -749,7 +783,17 @@
                 } else if (question.question_text === 'Journal Notes') {
                     input = `<textarea id="q${question.id}" class="form-control" rows="4" placeholder="Enter each note on a new line"></textarea>`;
                 } else {
-                    input = `<textarea id="q${question.id}" class="form-control" rows="3"></textarea>`;
+                    if (question.question_text === 'Class Technique') {
+                        input = `<div style="position: relative;">
+                            <input type="text" id="q${question.id}" class="form-control" placeholder="Search or select technique focus" oninput="filterTechniques(this.value, ${question.id})" onfocus="showTechniqueDropdown(${question.id})" onblur="hideTechniqueDropdown(${question.id})">
+                            <div id="techniqueDropdown${question.id}" class="technique-dropdown hidden">
+                                <!-- Options will be populated by JavaScript -->
+                            </div>
+                            <input type="text" id="techniqueOther${question.id}" class="form-control hidden" placeholder="Enter custom technique" style="margin-top: 10px;">
+                        </div>`;
+                    } else {
+                        input = `<textarea id="q${question.id}" class="form-control" rows="3"></textarea>`;
+                    }
                 }
                 
                 div.innerHTML = `<label>${question.question_text}:</label>${input}`;
@@ -767,7 +811,16 @@
             const responses = [];
             
             questions.forEach(question => {
-                const value = document.getElementById(`q${question.id}`).value;
+                let value = document.getElementById(`q${question.id}`).value;
+                
+                // Handle technique field with "Other" option
+                if (question.question_text === 'Class Technique') {
+                    const otherInput = document.getElementById(`techniqueOther${question.id}`);
+                    if (otherInput && !otherInput.classList.contains('hidden') && otherInput.value) {
+                        value = otherInput.value;
+                    }
+                }
+                
                 if (value) {
                     responses.push({
                         question_id: question.id,
@@ -997,6 +1050,91 @@
             // RPE vs Rounds Correlation - REMOVED
             
             chartsContainer.innerHTML += advancedHTML;
+        }
+        
+        const techniques = [
+            'Closed Guard Sweeps', 'Closed Guard Submissions', 'Open Guard Passes', 'Guard Retention',
+            'Spider Guard Attacks', 'De La Riva Guard', 'X-Guard Sweeps', 'Butterfly Guard',
+            'Mount Attacks', 'Mount Escapes', 'Side Control Attacks', 'Side Control Escapes',
+            'Knee on Belly', 'North-South Position', 'Back Control Attacks', 'Back Control Escapes',
+            'Rear Naked Choke Setups', 'Takedowns', 'Takedown Defense', 'Wrestling Shots',
+            'Judo Throws', 'Heel Hooks', 'Knee Bars', 'Ankle Locks', 'Leg Lock Defense',
+            'Guard Passing', 'Scrambles', 'Position Transitions', 'Other'
+        ];
+        
+        function showTechniqueDropdown(questionId) {
+            const dropdown = document.getElementById(`techniqueDropdown${questionId}`);
+            if (dropdown) {
+                populateTechniqueDropdown(questionId, techniques);
+                dropdown.classList.remove('hidden');
+            }
+        }
+        
+        function hideTechniqueDropdown(questionId) {
+            setTimeout(() => {
+                const dropdown = document.getElementById(`techniqueDropdown${questionId}`);
+                if (dropdown) {
+                    dropdown.classList.add('hidden');
+                }
+            }, 200);
+        }
+        
+        function filterTechniques(value, questionId) {
+            const filtered = techniques.filter(tech => 
+                tech.toLowerCase().includes(value.toLowerCase())
+            );
+            populateTechniqueDropdown(questionId, filtered);
+        }
+        
+        function populateTechniqueDropdown(questionId, techniqueList) {
+            const dropdown = document.getElementById(`techniqueDropdown${questionId}`);
+            if (!dropdown) return;
+            
+            dropdown.innerHTML = '';
+            techniqueList.forEach(technique => {
+                const option = document.createElement('div');
+                option.className = 'technique-option';
+                option.textContent = technique;
+                option.onclick = () => selectTechnique(questionId, technique);
+                dropdown.appendChild(option);
+            });
+        }
+        
+        function selectTechnique(questionId, technique) {
+            const input = document.getElementById(`q${questionId}`);
+            const otherInput = document.getElementById(`techniqueOther${questionId}`);
+            const dropdown = document.getElementById(`techniqueDropdown${questionId}`);
+            
+            if (technique === 'Other') {
+                input.value = '';
+                otherInput.classList.remove('hidden');
+                otherInput.focus();
+            } else {
+                input.value = technique;
+                otherInput.classList.add('hidden');
+                otherInput.value = '';
+            }
+            
+            dropdown.classList.add('hidden');
+        }
+        
+        function showRPEDescription(value) {
+            const descriptions = {
+                '1': 'Light stretching or warm-up',
+                '2': 'Easy drilling, no resistance',
+                '3': 'Moderate drilling with some resistance',
+                '4': 'Light rolling, controlled pace',
+                '5': 'Normal rolling intensity',
+                '6': 'Hard rolling, competitive pace',
+                '7': 'Very intense rolling, pushing limits',
+                '8': 'Competition-level intensity',
+                '9': 'All-out effort, championship finals'
+            };
+            
+            const descDiv = document.getElementById('rpeDescription');
+            if (descDiv) {
+                descDiv.textContent = descriptions[value] || '';
+            }
         }
         
         function showTrainingDescription(value) {
