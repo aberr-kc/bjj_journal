@@ -214,8 +214,58 @@
                     <label for="rememberMe" style="margin: 0; color: #8a9ba8; font-size: 14px;">Remember me</label>
                 </div>
                 <button onclick="login()" class="btn" style="width: 100%; margin-bottom: 10px;">Login</button>
-                <button onclick="register()" class="btn btn-secondary" style="width: 100%;">Register</button>
+                <p style="text-align: center; color: #8a9ba8; font-size: 14px; margin-bottom: 10px;">Don't have an account? Register now</p>
+                <button onclick="showRegisterForm()" class="btn btn-secondary" style="width: 100%;">Register</button>
                 <div id="authMessage"></div>
+            </div>
+        </div>
+
+        <!-- Registration Form -->
+        <div id="registerForm" class="login-container hidden">
+            <div class="login-card">
+                <h1 class="login-title">Create Account</h1>
+                <div class="form-group">
+                    <label>Username:</label>
+                    <input type="text" id="regUsername" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label>Password:</label>
+                    <input type="password" id="regPassword" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label>Confirm Password:</label>
+                    <input type="password" id="regConfirmPassword" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label>Name:</label>
+                    <input type="text" id="regName" class="form-control" placeholder="Your full name">
+                </div>
+                <div class="form-group">
+                    <label>Age:</label>
+                    <input type="number" id="regAge" class="form-control" placeholder="Age" min="1" max="100">
+                </div>
+                <div class="form-group">
+                    <label>Weight (kg):</label>
+                    <input type="number" id="regWeight" class="form-control" placeholder="Weight in kg" step="0.1">
+                </div>
+                <div class="form-group">
+                    <label>Height (cm):</label>
+                    <input type="number" id="regHeight" class="form-control" placeholder="Height in cm">
+                </div>
+                <div class="form-group">
+                    <label>Belt:</label>
+                    <select id="regBelt" class="form-control">
+                        <option value="">Select belt</option>
+                        <option value="White">White</option>
+                        <option value="Blue">Blue</option>
+                        <option value="Purple">Purple</option>
+                        <option value="Brown">Brown</option>
+                        <option value="Black">Black</option>
+                    </select>
+                </div>
+                <button onclick="registerUser()" class="btn" style="width: 100%; margin-bottom: 10px;">Register</button>
+                <button onclick="cancelRegister()" class="btn btn-secondary" style="width: 100%;">Cancel</button>
+                <div id="regMessage"></div>
             </div>
         </div>
 
@@ -414,6 +464,109 @@
             } catch (error) {
                 console.error('Failed to clear credentials:', error);
             }
+        }
+
+        function showRegisterForm() {
+            document.getElementById('loginForm').classList.add('hidden');
+            document.getElementById('registerForm').classList.remove('hidden');
+        }
+        
+        function cancelRegister() {
+            document.getElementById('registerForm').classList.add('hidden');
+            document.getElementById('loginForm').classList.remove('hidden');
+            clearRegisterForm();
+        }
+        
+        function clearRegisterForm() {
+            document.getElementById('regUsername').value = '';
+            document.getElementById('regPassword').value = '';
+            document.getElementById('regConfirmPassword').value = '';
+            document.getElementById('regName').value = '';
+            document.getElementById('regAge').value = '';
+            document.getElementById('regWeight').value = '';
+            document.getElementById('regHeight').value = '';
+            document.getElementById('regBelt').value = '';
+            document.getElementById('regMessage').innerHTML = '';
+        }
+        
+        async function registerUser() {
+            const username = document.getElementById('regUsername').value;
+            const password = document.getElementById('regPassword').value;
+            const confirmPassword = document.getElementById('regConfirmPassword').value;
+            const name = document.getElementById('regName').value;
+            const age = document.getElementById('regAge').value;
+            const weight = document.getElementById('regWeight').value;
+            const height = document.getElementById('regHeight').value;
+            const belt = document.getElementById('regBelt').value;
+            
+            if (!username || !password) {
+                showRegMessage('Please enter username and password', 'error');
+                return;
+            }
+            
+            if (password !== confirmPassword) {
+                showRegMessage('Passwords do not match', 'error');
+                return;
+            }
+            
+            try {
+                // Register user
+                const response = await fetch(`${API_BASE}/auth/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+                
+                if (response.ok) {
+                    // Login automatically
+                    const loginResponse = await fetch(`${API_BASE}/auth/login`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ username, password })
+                    });
+                    
+                    if (loginResponse.ok) {
+                        const data = await loginResponse.json();
+                        token = data.access_token;
+                        localStorage.setItem('token', token);
+                        
+                        // Create profile if any profile data provided
+                        if (name || age || weight || height || belt) {
+                            const profileData = {
+                                name: name || null,
+                                age: parseInt(age) || null,
+                                weight: parseFloat(weight) || null,
+                                height: parseFloat(height) || null,
+                                belt: belt || null
+                            };
+                            
+                            await fetch(`${API_BASE}/profile/`, {
+                                method: 'PUT',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'Authorization': `Bearer ${token}`
+                                },
+                                body: JSON.stringify(profileData)
+                            });
+                        }
+                        
+                        showMainApp();
+                    } else {
+                        showRegMessage('Registration successful but login failed', 'error');
+                    }
+                } else {
+                    const error = await response.json();
+                    showRegMessage('Registration failed: ' + (error.detail || 'Username may already exist'), 'error');
+                }
+            } catch (error) {
+                showRegMessage('Connection error', 'error');
+            }
+        }
+        
+        function showRegMessage(message, type) {
+            const messageDiv = document.getElementById('regMessage');
+            messageDiv.innerHTML = `<div class="message ${type}">${message}</div>`;
+            setTimeout(() => messageDiv.innerHTML = '', 3000);
         }
 
         async function register() {
