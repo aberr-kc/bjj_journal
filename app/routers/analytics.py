@@ -89,6 +89,26 @@ def get_dashboard_stats(
     for r in training_type_responses:
         training_types[r.answer] = training_types.get(r.answer, 0) + 1
     
+    # Submissions analysis
+    technique_responses = [r for r in responses if "Class Technique" in r.question.question_text]
+    submissions = {}
+    for r in technique_responses:
+        # Extract submission from "Position - Submission" format
+        if " - " in r.answer:
+            parts = r.answer.split(" - ")
+            if len(parts) >= 2:
+                technique_type = parts[1].strip()
+                # Only count if it's a submission (not sweeps, escapes, etc.)
+                submission_keywords = [
+                    'Choke', 'Triangle', 'Armbar', 'Kimura', 'Omoplata', 'Americana', 
+                    'Heel Hook', 'Toe Hold', 'Kneebar', 'Lock', 'Slicer', 'Crusher',
+                    'Guillotine', 'D\'Arce', 'Anaconda', 'Bow and Arrow', 'Cross Collar',
+                    'Baseball', 'Ezekiel', 'Paper Cutter', 'Loop', 'Peruvian', 'Japanese',
+                    'Gogoplata', 'Von Flue', 'Twister', 'Crank', 'Wrist'
+                ]
+                if any(keyword.lower() in technique_type.lower() for keyword in submission_keywords):
+                    submissions[technique_type] = submissions.get(technique_type, 0) + 1
+    
     # Monthly trend (last 6 months)
     monthly_trend = []
     for i in range(6):
@@ -110,25 +130,96 @@ def get_dashboard_stats(
                 "rpe": entry_rpe
             })
     
-    # Weekly training volume (last 4 weeks)
+    # Weekly training volume based on period
     weekly_volume = []
-    for i in range(4):
-        week_start = now - timedelta(days=7*(i+1))
-        week_end = week_start + timedelta(days=7)
-        week_entries = [e for e in entries if week_start <= e.date <= week_end]
-        week_rounds = sum(int(r.answer) for r in responses if r.entry_id in [e.id for e in week_entries] and "Rounds Rolled" in r.question.question_text and r.answer.isdigit())
-        
-        # Format date range
-        start_str = week_start.strftime("%d/%m")
-        end_str = (week_end - timedelta(days=1)).strftime("%d/%m")
-        date_range = f"{start_str} - {end_str}"
-        
-        weekly_volume.append({
-            "week": f"Week {4-i}",
-            "date_range": date_range,
-            "rounds": week_rounds,
-            "sessions": len(week_entries)
-        })
+    if period == "7d":
+        # Show daily for last 7 days
+        for i in range(7):
+            day_start = now - timedelta(days=i+1)
+            day_end = day_start + timedelta(days=1)
+            day_entries = [e for e in entries if day_start <= e.date < day_end]
+            day_rounds = sum(int(r.answer) for r in responses if r.entry_id in [e.id for e in day_entries] and "Rounds Rolled" in r.question.question_text and r.answer.isdigit())
+            
+            weekly_volume.append({
+                "period": day_start.strftime("%d/%m"),
+                "date_range": day_start.strftime("%d/%m"),
+                "rounds": day_rounds,
+                "sessions": len(day_entries)
+            })
+    elif period == "30d":
+        # Show 4 weeks for last 30 days
+        for i in range(4):
+            week_start = now - timedelta(days=7*(i+1))
+            week_end = week_start + timedelta(days=7)
+            week_entries = [e for e in entries if week_start <= e.date <= week_end]
+            week_rounds = sum(int(r.answer) for r in responses if r.entry_id in [e.id for e in week_entries] and "Rounds Rolled" in r.question.question_text and r.answer.isdigit())
+            
+            start_str = week_start.strftime("%d/%m")
+            end_str = (week_end - timedelta(days=1)).strftime("%d/%m")
+            
+            weekly_volume.append({
+                "period": f"Week {4-i}",
+                "date_range": f"{start_str} - {end_str}",
+                "rounds": week_rounds,
+                "sessions": len(week_entries)
+            })
+    elif period == "6m":
+        # Show 6 months
+        for i in range(6):
+            month_start = (now - timedelta(days=30*i)).replace(day=1)
+            if i == 0:
+                month_end = now
+            else:
+                month_end = month_start.replace(day=28) + timedelta(days=4)
+                month_end = month_end - timedelta(days=month_end.day)
+            
+            month_entries = [e for e in entries if month_start <= e.date <= month_end]
+            month_rounds = sum(int(r.answer) for r in responses if r.entry_id in [e.id for e in month_entries] and "Rounds Rolled" in r.question.question_text and r.answer.isdigit())
+            
+            weekly_volume.append({
+                "period": month_start.strftime("%b %Y"),
+                "date_range": month_start.strftime("%b %Y"),
+                "rounds": month_rounds,
+                "sessions": len(month_entries)
+            })
+    elif period == "1y":
+        # Show 12 months
+        for i in range(12):
+            month_start = (now - timedelta(days=30*i)).replace(day=1)
+            if i == 0:
+                month_end = now
+            else:
+                month_end = month_start.replace(day=28) + timedelta(days=4)
+                month_end = month_end - timedelta(days=month_end.day)
+            
+            month_entries = [e for e in entries if month_start <= e.date <= month_end]
+            month_rounds = sum(int(r.answer) for r in responses if r.entry_id in [e.id for e in month_entries] and "Rounds Rolled" in r.question.question_text and r.answer.isdigit())
+            
+            weekly_volume.append({
+                "period": month_start.strftime("%b %Y"),
+                "date_range": month_start.strftime("%b %Y"),
+                "rounds": month_rounds,
+                "sessions": len(month_entries)
+            })
+    else:
+        # Show last 4 weeks for other periods
+        for i in range(4):
+            week_start = now - timedelta(days=7*(i+1))
+            week_end = week_start + timedelta(days=7)
+            week_entries = [e for e in entries if week_start <= e.date <= week_end]
+            week_rounds = sum(int(r.answer) for r in responses if r.entry_id in [e.id for e in week_entries] and "Rounds Rolled" in r.question.question_text and r.answer.isdigit())
+            
+            start_str = week_start.strftime("%d/%m")
+            end_str = (week_end - timedelta(days=1)).strftime("%d/%m")
+            
+            weekly_volume.append({
+                "period": f"Week {4-i}",
+                "date_range": f"{start_str} - {end_str}",
+                "rounds": week_rounds,
+                "sessions": len(week_entries)
+            })
+    
+    weekly_volume.reverse()  # Show oldest to newest
     
     # Rounds by session type
     rounds_by_session_type = {"Gi": 0, "No Gi": 0, "Both": 0}
@@ -156,6 +247,7 @@ def get_dashboard_stats(
         "total_rounds": total_rounds,
         "session_types": session_types,
         "training_types": training_types,
+        "submissions": submissions,
         "rpe_distribution": rpe_distribution,
         "monthly_trend": list(reversed(monthly_trend)),
         "rpe_trend": rpe_trend,

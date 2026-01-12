@@ -12,17 +12,35 @@ PASSWORD = "password123"
 session_types = ["Gi", "No Gi", "Both"]
 training_types = ["Skill development", "Rest session", "Drilling", "High Intensity", "Competition Rounds", "Social"]
 rpe_ratings = [3, 4, 5, 6, 7, 8, 9]
+# Enhanced technique data with position-skill combinations
+POSITIONS = ["Closed Guard", "Open Guard", "Half Guard", "Mount", "Side Control", "Back Control", "Butterfly Guard", "De La Riva Guard", "X-Guard", "Spider Guard"]
+SKILLS = ["Attacks/Submissions", "Sweeps", "Escapes", "Defense", "Setups", "Transitions"]
+SUBMISSIONS = [
+    "Armbar", "Triangle Choke", "Rear Naked Choke", "Kimura", "Omoplata", 
+    "Guillotine Choke", "D'Arce Choke", "Heel Hook", "Americana", "Ezekiel Choke",
+    "Bow and Arrow Choke", "Cross Collar Choke", "Baseball Choke", "Anaconda Choke",
+    "Toe Hold", "Knee Bar", "Calf Slicer", "Bicep Slicer", "Wrist Lock",
+    "North South Choke", "Paper Cutter Choke", "Loop Choke", "Peruvian Necktie",
+    "Gogoplata", "Buggy Choke", "Von Flue Choke", "Arm Triangle", "Japanese Necktie",
+    "Straight Ankle Lock", "Estima Lock", "Twister", "Banana Split"
+]
+
 techniques = [
-    "Guard passes and sweeps",
-    "Armbar from guard",
-    "Triangle choke setups",
-    "Back control transitions",
-    "Kimura from side control",
-    "Butterfly guard sweeps",
-    "Leg drag passes",
-    "Collar chokes from mount",
-    "Escape from side control",
-    "Half guard recovery"
+    "Closed Guard - Armbar",
+    "Closed Guard - Triangle Choke", 
+    "Mount - Cross Collar Choke",
+    "Back Control - Rear Naked Choke",
+    "Side Control - Kimura",
+    "Half Guard - Sweeps",
+    "Butterfly Guard - Sweeps",
+    "Open Guard - Triangle Choke",
+    "Spider Guard - Omoplata",
+    "De La Riva Guard - Heel Hook",
+    "X-Guard - Sweeps",
+    "Mount - Americana",
+    "Side Control - D'Arce Choke",
+    "Back Control - Bow and Arrow Choke",
+    "Closed Guard - Omoplata"
 ]
 journal_notes = [
     "Worked on timing for guard passes\nFelt good energy today\nNeed to work on grip fighting",
