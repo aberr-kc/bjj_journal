@@ -238,9 +238,9 @@
                     <input type="checkbox" id="rememberMe" style="width: auto; margin: 0;">
                     <label for="rememberMe" style="margin: 0; color: #8a9ba8; font-size: 14px;">Remember me</label>
                 </div>
-                <button onclick="alert('TEST: Login button clicked!'); alert('Login clicked!'); login()" class="btn" style="width: 100%; margin-bottom: 10px;">Login</button>
+                <button onclick="login()" class="btn" style="width: 100%; margin-bottom: 10px;">Login</button>
                 <p style="text-align: center; color: #8a9ba8; font-size: 14px; margin-bottom: 10px;">Don't have an account? Register now</p>
-                <button onclick="alert('TEST: Register button clicked!'); alert('Register clicked!'); showRegisterForm()" class="btn btn-secondary" style="width: 100%;">Register</button>
+                <button onclick="showRegisterForm()" class="btn btn-secondary" style="width: 100%;">Register</button>
                 <div id="authMessage"></div>
             </div>
         </div>
@@ -634,19 +634,14 @@
         let dashboardData = null;
 
         async function login() {
-            alert('Login function called!');
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
             const rememberMe = document.getElementById('rememberMe').checked;
-            
-            alert(`Username: ${username}, Password: ${password}`);
             
             if (!username || !password) {
                 showMessage('Please enter username and password', 'error');
                 return;
             }
-            
-            alert('About to make API call to: ' + API_BASE);
             
             try {
                 const response = await fetch(`${API_BASE}/auth/login`, {
@@ -655,32 +650,24 @@
                     body: JSON.stringify({ username, password })
                 });
                 
-                alert('API response received: ' + response.status);
-                
                 if (response.ok) {
                     const data = await response.json();
                     token = data.access_token;
                     localStorage.setItem('bjj_token', token);
                     
-                    // Save credentials immediately after successful login
                     if (rememberMe) {
-                        const saved = saveCredentials(username, password);
-                        if (!saved) {
-                            console.warn('Failed to save credentials');
-                        }
+                        saveCredentials(username, password);
                     } else {
                         clearCredentials(username);
                     }
                     
-                    alert('Login successful, showing main app');
                     showMainApp();
                 } else {
                     showMessage('Login failed', 'error');
-                    // Clear invalid credentials
                     clearCredentials(username);
                 }
             } catch (error) {
-                alert('Login error: ' + error.message);
+                console.error('Login error:', error);
                 showMessage('Connection error', 'error');
                 clearCredentials(username);
             }

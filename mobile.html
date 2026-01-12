@@ -269,9 +269,9 @@
                     <input type="checkbox" id="rememberMe" style="width: auto; margin: 0;">
                     <label for="rememberMe" style="margin: 0; color: #8a9ba8; font-size: 14px;">Remember me</label>
                 </div>
-                <button onclick="alert('TEST: Login button clicked!'); alert('Login clicked!'); login()" class="btn" style="width: 100%; margin-bottom: 10px;">Login</button>
+                <button onclick="login()" class="btn" style="width: 100%; margin-bottom: 10px;">Login</button>
                 <p style="text-align: center; color: #8a9ba8; font-size: 14px; margin-bottom: 10px;">Don't have an account? Register now</p>
-                <button onclick="alert('TEST: Register button clicked!'); alert('Register clicked!'); showRegisterForm()" class="btn btn-secondary" style="width: 100%;">Register</button>
+                <button onclick="showRegisterForm()" class="btn btn-secondary" style="width: 100%;">Register</button>
                 <div id="authMessage"></div>
             </div>
         </div>
@@ -433,12 +433,6 @@
     </div>
 
     <script>
-        console.log('JavaScript is loading...');
-        window.onload = function() {
-            console.log('Window loaded, JavaScript is working!');
-            alert('JavaScript is working! Window loaded.');
-        };
-        
         // Global variables - MUST be declared first
         const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
             ? 'http://localhost:8000' 
