@@ -433,6 +433,13 @@
     </div>
 
     <script>
+        // Global variables - MUST be declared first
+        const API_BASE = 'https://bjj-journal-production.up.railway.app';
+        let token = localStorage.getItem('bjj_token');
+        let questions = [];
+        let editingEntry = null;
+        let dashboardData = null;
+        
         // Initialize app with improved credential loading
         function initializeApp() {
             if (token) {
@@ -653,12 +660,6 @@
             }
         }
 
-        const API_BASE = window.location.origin;
-        let token = localStorage.getItem('bjj_token');
-        let questions = [];
-        let editingEntry = null;
-        let dashboardData = null;
-
         async function login() {
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
@@ -789,12 +790,6 @@
                             <div id="positionDropdown${question.id}" class="technique-dropdown hidden">
                                 <!-- Position options will be populated by JavaScript -->
                             </div>
-                            <select id="q${question.id}_skill" class="form-control" disabled onchange="updateTechniqueValue(${question.id})">
-                                <option value="">Select skill type</option>
-                            </select>
-                            <input type="hidden" id="q${question.id}" class="form-control">
-                            <input type="text" id="q${question.id}_other" class="form-control hidden" placeholder="Enter custom position/technique" style="margin-top: 10px;">
-                        </div>`;
                             <select id="q${question.id}_skill" class="form-control" disabled onchange="updateTechniqueValue(${question.id})">
                                 <option value="">Select skill type</option>
                             </select>
