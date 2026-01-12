@@ -433,12 +433,20 @@
     </div>
 
     <script>
+        console.log('JavaScript is loading...');
+        window.onload = function() {
+            console.log('Window loaded, JavaScript is working!');
+            alert('JavaScript is working! Window loaded.');
+        };
+        
         // Global variables - MUST be declared first
         const API_BASE = 'https://bjj-journal-production.up.railway.app';
         let token = localStorage.getItem('bjj_token');
         let questions = [];
         let editingEntry = null;
         let dashboardData = null;
+        
+        console.log('Global variables set, API_BASE:', API_BASE);
         
         // Initialize app with improved credential loading
         function initializeApp() {
