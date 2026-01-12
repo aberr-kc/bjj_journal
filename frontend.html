@@ -553,7 +553,7 @@
                     if (loginResponse.ok) {
                         const data = await loginResponse.json();
                         token = data.access_token;
-                        localStorage.setItem('token', token);
+                        localStorage.setItem('bjj_token', token);
                         
                         // Create profile if any profile data provided
                         if (name || age || weight || height || belt) {
@@ -619,8 +619,10 @@
             }
         }
 
-        const API_BASE = window.location.origin;
-        let token = localStorage.getItem('token');
+        const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+            ? 'http://localhost:8000' 
+            : 'https://bjj-journal-production.up.railway.app';
+        let token = localStorage.getItem('bjj_token');
         let questions = [];
         let editingEntry = null;
         let dashboardData = null;
@@ -645,7 +647,7 @@
                 if (response.ok) {
                     const data = await response.json();
                     token = data.access_token;
-                    localStorage.setItem('token', token);
+                    localStorage.setItem('bjj_token', token);
                     
                     // Save credentials immediately after successful login
                     if (rememberMe) {
@@ -671,7 +673,7 @@
 
         function logout() {
             const username = document.getElementById('username')?.value;
-            localStorage.removeItem('token');
+            localStorage.removeItem('bjj_token');
             if (username) {
                 clearCredentials(username);
             }
