@@ -755,6 +755,9 @@
                             <select id="q${question.id}_skill" class="form-control" disabled onchange="updateTechniqueValue(${question.id})">
                                 <option value="">Select skill type</option>
                             </select>
+                            <select id="q${question.id}_submission" class="form-control hidden" onchange="updateTechniqueValue(${question.id})">
+                                <option value="">Select submission</option>
+                            </select>
                             <input type="hidden" id="q${question.id}" class="form-control">
                             <input type="text" id="q${question.id}_other" class="form-control hidden" placeholder="Enter custom position/technique" style="margin-top: 10px;">
                         </div>`;
@@ -784,12 +787,17 @@
                 if (question.question_text === 'Class Technique') {
                     const positionInput = document.getElementById(`q${question.id}_position`);
                     const skillSelect = document.getElementById(`q${question.id}_skill`);
+                    const submissionSelect = document.getElementById(`q${question.id}_submission`);
                     const otherInput = document.getElementById(`q${question.id}_other`);
                     
                     if (positionInput && positionInput.value === 'Other' && otherInput && otherInput.value) {
                         value = otherInput.value;
                     } else if (positionInput && skillSelect && positionInput.value && skillSelect.value) {
-                        value = `${positionInput.value} - ${skillSelect.value}`;
+                        if (skillSelect.value === 'Attacks/Submissions' && submissionSelect && submissionSelect.value) {
+                            value = `${positionInput.value} - ${submissionSelect.value}`;
+                        } else {
+                            value = `${positionInput.value} - ${skillSelect.value}`;
+                        }
                     }
                 }
                 
@@ -1066,6 +1074,24 @@
         
         const defaultSkills = ['Attacks/Submissions', 'Sweeps', 'Escapes', 'Defense', 'Setups', 'Transitions'];
         
+        const submissionTypes = [
+            'Armbar', 'Straight Armbar', 'Juji Gatame', 'Arm Crush', 'Americana', 'Keylock', 'Kimura',
+            'Reverse Kimura', 'Kimura Trap Finish', 'Monoplata', 'Omoplata', 'Reverse Omoplata',
+            'Tarikoplata', 'Mir Lock', 'Shoulder Lock', 'Scissor Choke', 'Triangle Choke',
+            'Front Triangle', 'Reverse Triangle', 'Side Triangle', 'Flying Triangle', 'Arm Triangle Choke',
+            'Head-and-Arm Choke', 'Kata Gatame', 'D\'Arce Choke', 'Brabo Choke', 'Anaconda Choke',
+            'North–South Choke', 'Guillotine Choke', 'High-Elbow Guillotine', 'Arm-In Guillotine',
+            'Low-Elbow Guillotine', 'Power Guillotine', 'Peruvian Necktie', 'Japanese Necktie',
+            'Bulldog Choke', 'Rear Naked Choke', 'Mata Leão', 'Short Choke', 'Bow and Arrow Choke',
+            'Cross Collar Choke', 'Single Collar Choke', 'Loop Choke', 'Clock Choke', 'Baseball Bat Choke',
+            'Ezekiel Choke', 'Modified Ezekiel', 'Paper Cutter Choke', 'Lapels Choke', 'Sliding Collar Choke',
+            'X-Choke', 'Palm-to-Palm Choke', 'Gogoplata', 'Reverse Gogoplata', 'Von Flue Choke',
+            'Punch Choke', 'Neck Crank', 'Can Opener', 'Twister', 'Cervical Crank', 'Spine Crank',
+            'Straight Ankle Lock', 'Ankle Lock', 'Achilles Lock', 'Heel Hook', 'Inside Heel Hook',
+            'Outside Heel Hook', 'Toe Hold', 'Kneebar', 'Calf Slicer', 'Calf Crusher', 'Bicep Slicer',
+            'Arm Slicer', 'Wrist Lock'
+        ];
+        
         function showPositionDropdown(questionId) {
             const dropdown = document.getElementById(`positionDropdown${questionId}`);
             if (dropdown) {
@@ -1116,6 +1142,7 @@
         function updateSkillOptions(questionId) {
             const positionInput = document.getElementById(`q${questionId}_position`);
             const skillSelect = document.getElementById(`q${questionId}_skill`);
+            const submissionSelect = document.getElementById(`q${questionId}_submission`);
             const hiddenInput = document.getElementById(`q${questionId}`);
             const otherInput = document.getElementById(`q${questionId}_other`);
             
@@ -1123,6 +1150,8 @@
             
             // Clear skill dropdown
             skillSelect.innerHTML = '<option value="">Select skill type</option>';
+            submissionSelect.classList.add('hidden');
+            submissionSelect.innerHTML = '<option value="">Select submission</option>';
             
             if (position === 'Other') {
                 skillSelect.disabled = true;
@@ -1153,15 +1182,33 @@
         function updateTechniqueValue(questionId) {
             const positionInput = document.getElementById(`q${questionId}_position`);
             const skillSelect = document.getElementById(`q${questionId}_skill`);
+            const submissionSelect = document.getElementById(`q${questionId}_submission`);
             const hiddenInput = document.getElementById(`q${questionId}`);
             const otherInput = document.getElementById(`q${questionId}_other`);
             
             const position = positionInput.value;
             const skill = skillSelect.value;
+            const submission = submissionSelect.value;
             const otherValue = otherInput.value;
+            
+            // Show submission dropdown if Attacks/Submissions is selected
+            if (skill === 'Attacks/Submissions') {
+                submissionSelect.classList.remove('hidden');
+                submissionTypes.forEach(sub => {
+                    const option = document.createElement('option');
+                    option.value = sub;
+                    option.textContent = sub;
+                    submissionSelect.appendChild(option);
+                });
+            } else {
+                submissionSelect.classList.add('hidden');
+                submissionSelect.innerHTML = '<option value="">Select submission</option>';
+            }
             
             if (position === 'Other' && otherValue) {
                 hiddenInput.value = otherValue;
+            } else if (position && skill && skill === 'Attacks/Submissions' && submission) {
+                hiddenInput.value = `${position} - ${submission}`;
             } else if (position && skill) {
                 hiddenInput.value = `${position} - ${skill}`;
             } else {
