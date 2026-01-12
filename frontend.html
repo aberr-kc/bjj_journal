@@ -634,14 +634,19 @@
         let dashboardData = null;
 
         async function login() {
+            alert('Login function called!');
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
             const rememberMe = document.getElementById('rememberMe').checked;
+            
+            alert(`Username: ${username}, Password: ${password}`);
             
             if (!username || !password) {
                 showMessage('Please enter username and password', 'error');
                 return;
             }
+            
+            alert('About to make API call to: ' + API_BASE);
             
             try {
                 const response = await fetch(`${API_BASE}/auth/login`, {
@@ -649,6 +654,8 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ username, password })
                 });
+                
+                alert('API response received: ' + response.status);
                 
                 if (response.ok) {
                     const data = await response.json();
@@ -665,6 +672,7 @@
                         clearCredentials(username);
                     }
                     
+                    alert('Login successful, showing main app');
                     showMainApp();
                 } else {
                     showMessage('Login failed', 'error');
@@ -672,6 +680,7 @@
                     clearCredentials(username);
                 }
             } catch (error) {
+                alert('Login error: ' + error.message);
                 showMessage('Connection error', 'error');
                 clearCredentials(username);
             }
@@ -762,12 +771,6 @@
                             <div id="positionDropdown${question.id}" class="technique-dropdown hidden">
                                 <!-- Position options will be populated by JavaScript -->
                             </div>
-                            <select id="q${question.id}_skill" class="form-control" disabled onchange="updateTechniqueValue(${question.id})">
-                                <option value="">Select skill type</option>
-                            </select>
-                            <input type="hidden" id="q${question.id}" class="form-control">
-                            <input type="text" id="q${question.id}_other" class="form-control hidden" placeholder="Enter custom position/technique" style="margin-top: 10px;">
-                        </div>`;
                             <select id="q${question.id}_skill" class="form-control" disabled onchange="updateTechniqueValue(${question.id})">
                                 <option value="">Select skill type</option>
                             </select>
