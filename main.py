@@ -8,7 +8,7 @@ from app.routers import auth, entries, questions, analytics, profile
 # Create database tables
 Base.metadata.create_all(bind=engine)
 
-app = FastAPI(title="BJJ Training Journal", version="1.0.0")
+app = FastAPI(title="BJJ Training Journal", version="1.0.1")
 
 # CORS middleware for frontend access
 app.add_middleware(
