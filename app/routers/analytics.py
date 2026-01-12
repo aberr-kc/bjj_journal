@@ -92,12 +92,18 @@ def get_dashboard_stats(
     # Submissions analysis
     technique_responses = [r for r in responses if "Class Technique" in r.question.question_text]
     submissions = {}
+    positions = {}
     for r in technique_responses:
         # Extract submission from "Position - Submission" format
         if " - " in r.answer:
             parts = r.answer.split(" - ")
             if len(parts) >= 2:
+                position = parts[0].strip()
                 technique_type = parts[1].strip()
+                
+                # Count positions/areas
+                positions[position] = positions.get(position, 0) + 1
+                
                 # Only count if it's a submission (not sweeps, escapes, etc.)
                 submission_keywords = [
                     'Choke', 'Triangle', 'Armbar', 'Kimura', 'Omoplata', 'Americana', 
@@ -248,6 +254,7 @@ def get_dashboard_stats(
         "session_types": session_types,
         "training_types": training_types,
         "submissions": submissions,
+        "positions": positions,
         "rpe_distribution": rpe_distribution,
         "monthly_trend": list(reversed(monthly_trend)),
         "rpe_trend": rpe_trend,
