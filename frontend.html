@@ -749,12 +749,133 @@
                     input = `<textarea id="q${question.id}" class="form-control" rows="4" placeholder="Enter each note on a new line"></textarea>`;
                 } else {
                     if (question.question_text === 'Class Technique') {
-                        input = `<div style="position: relative;">
-                            <input type="text" id="q${question.id}" class="form-control" placeholder="Search or select technique focus" oninput="filterTechniques(this.value, ${question.id})" onfocus="showTechniqueDropdown(${question.id})" onblur="hideTechniqueDropdown(${question.id})">
-                            <div id="techniqueDropdown${question.id}" class="technique-dropdown hidden">
-                                <!-- Options will be populated by JavaScript -->
-                            </div>
-                            <input type="text" id="techniqueOther${question.id}" class="form-control hidden" placeholder="Enter custom technique" style="margin-top: 10px;">
+                        input = `<div>
+                            <select id="q${question.id}_position" class="form-control" onchange="updateSkillOptions(${question.id})" style="margin-bottom: 10px;">
+                                <option value="">Select position/area</option>
+                                <option value="Closed Guard">Closed Guard</option>
+                                <option value="High Guard">High Guard</option>
+                                <option value="Low Guard">Low Guard</option>
+                                <option value="Cross Guard">Cross Guard</option>
+                                <option value="Clamp Guard">Clamp Guard</option>
+                                <option value="Rubber Guard">Rubber Guard</option>
+                                <option value="Mission Control">Mission Control</option>
+                                <option value="Williams Guard">Williams Guard</option>
+                                <option value="Double Overhook Guard">Double Overhook Guard</option>
+                                <option value="Overhook Guard">Overhook Guard</option>
+                                <option value="Collar-and-Sleeve Guard">Collar-and-Sleeve Guard</option>
+                                <option value="Same-Side Collar-and-Sleeve Guard">Same-Side Collar-and-Sleeve Guard</option>
+                                <option value="Cross Collar-and-Sleeve Guard">Cross Collar-and-Sleeve Guard</option>
+                                <option value="Open Guard">Open Guard</option>
+                                <option value="Seated Guard">Seated Guard</option>
+                                <option value="Supine Guard">Supine Guard</option>
+                                <option value="Combat Base Guard">Combat Base Guard</option>
+                                <option value="Feet-on-Hips Guard">Feet-on-Hips Guard</option>
+                                <option value="Feet-on-Biceps Guard">Feet-on-Biceps Guard</option>
+                                <option value="Double Biceps Guard">Double Biceps Guard</option>
+                                <option value="Distance Guard">Distance Guard</option>
+                                <option value="Spider Guard">Spider Guard</option>
+                                <option value="Double Spider Guard">Double Spider Guard</option>
+                                <option value="Lasso Guard">Lasso Guard</option>
+                                <option value="Reverse Lasso Guard">Reverse Lasso Guard</option>
+                                <option value="Spider–Lasso Guard">Spider–Lasso Guard</option>
+                                <option value="Cross Spider Guard">Cross Spider Guard</option>
+                                <option value="Pistol Grip Guard">Pistol Grip Guard</option>
+                                <option value="Sleeve Guard">Sleeve Guard</option>
+                                <option value="De La Riva Guard">De La Riva Guard</option>
+                                <option value="Shallow De La Riva">Shallow De La Riva</option>
+                                <option value="Deep De La Riva">Deep De La Riva</option>
+                                <option value="Reverse De La Riva">Reverse De La Riva</option>
+                                <option value="De La Riva X">De La Riva X</option>
+                                <option value="De La Riva Sit-Up Guard">De La Riva Sit-Up Guard</option>
+                                <option value="X-Guard">X-Guard</option>
+                                <option value="Shallow X-Guard">Shallow X-Guard</option>
+                                <option value="Modified X-Guard">Modified X-Guard</option>
+                                <option value="Cross X-Guard">Cross X-Guard</option>
+                                <option value="Reverse X-Guard">Reverse X-Guard</option>
+                                <option value="70/30 Guard">70/30 Guard</option>
+                                <option value="Standing X-Guard">Standing X-Guard</option>
+                                <option value="Butterfly Guard">Butterfly Guard</option>
+                                <option value="Double Butterfly Guard">Double Butterfly Guard</option>
+                                <option value="Half Butterfly Guard">Half Butterfly Guard</option>
+                                <option value="Butterfly Half Guard">Butterfly Half Guard</option>
+                                <option value="Seated Butterfly Guard">Seated Butterfly Guard</option>
+                                <option value="Underhook Butterfly Guard">Underhook Butterfly Guard</option>
+                                <option value="Overhook Butterfly Guard">Overhook Butterfly Guard</option>
+                                <option value="Half Guard">Half Guard</option>
+                                <option value="Knee Shield Half Guard">Knee Shield Half Guard</option>
+                                <option value="Z-Guard">Z-Guard</option>
+                                <option value="Half Guard with Underhook">Half Guard with Underhook</option>
+                                <option value="Half Guard with Overhook">Half Guard with Overhook</option>
+                                <option value="Deep Half Guard">Deep Half Guard</option>
+                                <option value="Coyote Half Guard">Coyote Half Guard</option>
+                                <option value="Lockdown">Lockdown</option>
+                                <option value="Electric Chair">Electric Chair</option>
+                                <option value="Old School Half Guard">Old School Half Guard</option>
+                                <option value="Half Guard Sit-Up">Half Guard Sit-Up</option>
+                                <option value="Worm Guard">Worm Guard</option>
+                                <option value="Squid Guard">Squid Guard</option>
+                                <option value="Reverse Squid Guard">Reverse Squid Guard</option>
+                                <option value="Ringworm Guard">Ringworm Guard</option>
+                                <option value="Gubber Guard">Gubber Guard</option>
+                                <option value="Lapel De La Riva">Lapel De La Riva</option>
+                                <option value="Lapel Half Guard">Lapel Half Guard</option>
+                                <option value="Lapel Closed Guard">Lapel Closed Guard</option>
+                                <option value="Lapel X-Guard">Lapel X-Guard</option>
+                                <option value="Lapel Spider Guard">Lapel Spider Guard</option>
+                                <option value="Ashi Garami">Ashi Garami</option>
+                                <option value="Single-Leg X">Single-Leg X</option>
+                                <option value="Cross Ashi">Cross Ashi</option>
+                                <option value="Outside Ashi">Outside Ashi</option>
+                                <option value="Inside Ashi">Inside Ashi</option>
+                                <option value="Saddle">Saddle</option>
+                                <option value="Honey Hole">Honey Hole</option>
+                                <option value="411">411</option>
+                                <option value="50/50 Guard">50/50 Guard</option>
+                                <option value="80/20 Guard">80/20 Guard</option>
+                                <option value="Cross 50/50">Cross 50/50</option>
+                                <option value="Turtle Guard">Turtle Guard</option>
+                                <option value="Sit-Out Turtle">Sit-Out Turtle</option>
+                                <option value="Granby Guard">Granby Guard</option>
+                                <option value="Inverted Guard">Inverted Guard</option>
+                                <option value="Tornado Guard">Tornado Guard</option>
+                                <option value="Rolling Turtle">Rolling Turtle</option>
+                                <option value="K-Guard">K-Guard</option>
+                                <option value="Matrix Guard">Matrix Guard</option>
+                                <option value="Crab Ride">Crab Ride</option>
+                                <option value="Berimbolo">Berimbolo</option>
+                                <option value="Reverse Guard">Reverse Guard</option>
+                                <option value="Leg Weave Guard">Leg Weave Guard</option>
+                                <option value="Shin-to-Shin Guard">Shin-to-Shin Guard</option>
+                                <option value="Seated Shin-to-Shin">Seated Shin-to-Shin</option>
+                                <option value="Octopus Guard">Octopus Guard</option>
+                                <option value="Panda Guard">Panda Guard</option>
+                                <option value="Mount">Mount</option>
+                                <option value="High Mount">High Mount</option>
+                                <option value="Low Mount">Low Mount</option>
+                                <option value="S-Mount">S-Mount</option>
+                                <option value="Side Control">Side Control</option>
+                                <option value="Kesa Gatame">Kesa Gatame</option>
+                                <option value="Reverse Kesa Gatame">Reverse Kesa Gatame</option>
+                                <option value="North–South">North–South</option>
+                                <option value="Knee on Belly">Knee on Belly</option>
+                                <option value="Back Control">Back Control</option>
+                                <option value="Back Mount">Back Mount</option>
+                                <option value="Body Triangle">Body Triangle</option>
+                                <option value="Twister Control">Twister Control</option>
+                                <option value="Headquarters Position">Headquarters Position</option>
+                                <option value="Leg Drag Position">Leg Drag Position</option>
+                                <option value="Smash Pass Position">Smash Pass Position</option>
+                                <option value="Over-Under Position">Over-Under Position</option>
+                                <option value="Float Passing Position">Float Passing Position</option>
+                                <option value="Chest-to-Chest Half Guard">Chest-to-Chest Half Guard</option>
+                                <option value="Split Squat Passing Base">Split Squat Passing Base</option>
+                                <option value="Other">Other</option>
+                            </select>
+                            <select id="q${question.id}_skill" class="form-control" disabled onchange="updateTechniqueValue(${question.id})">
+                                <option value="">Select skill type</option>
+                            </select>
+                            <input type="hidden" id="q${question.id}" class="form-control">
+                            <input type="text" id="q${question.id}_other" class="form-control hidden" placeholder="Enter custom position/technique" style="margin-top: 10px;">
                         </div>`;
                     } else {
                         input = `<textarea id="q${question.id}" class="form-control" rows="3"></textarea>`;
@@ -778,11 +899,16 @@
             questions.forEach(question => {
                 let value = document.getElementById(`q${question.id}`).value;
                 
-                // Handle technique field with "Other" option
+                // Handle 2-tier technique dropdown
                 if (question.question_text === 'Class Technique') {
-                    const otherInput = document.getElementById(`techniqueOther${question.id}`);
-                    if (otherInput && !otherInput.classList.contains('hidden') && otherInput.value) {
+                    const positionSelect = document.getElementById(`q${question.id}_position`);
+                    const skillSelect = document.getElementById(`q${question.id}_skill`);
+                    const otherInput = document.getElementById(`q${question.id}_other`);
+                    
+                    if (positionSelect && positionSelect.value === 'Other' && otherInput && otherInput.value) {
                         value = otherInput.value;
+                    } else if (positionSelect && skillSelect && positionSelect.value && skillSelect.value) {
+                        value = `${positionSelect.value} - ${skillSelect.value}`;
                     }
                 }
                 
@@ -1022,70 +1148,67 @@
             chartsContainer.innerHTML += advancedHTML;
         }
         
-        const techniques = [
-            'Closed Guard Sweeps', 'Closed Guard Submissions', 'Open Guard Passes', 'Guard Retention',
-            'Spider Guard Attacks', 'De La Riva Guard', 'X-Guard Sweeps', 'Butterfly Guard',
-            'Mount Attacks', 'Mount Escapes', 'Side Control Attacks', 'Side Control Escapes',
-            'Knee on Belly', 'North-South Position', 'Back Control Attacks', 'Back Control Escapes',
-            'Rear Naked Choke Setups', 'Takedowns', 'Takedown Defense', 'Wrestling Shots',
-            'Judo Throws', 'Heel Hooks', 'Knee Bars', 'Ankle Locks', 'Leg Lock Defense',
-            'Guard Passing', 'Scrambles', 'Position Transitions', 'Other'
-        ];
+        const skillsByPosition = {
+            'Other': ['Custom Entry']
+        };
         
-        function showTechniqueDropdown(questionId) {
-            const dropdown = document.getElementById(`techniqueDropdown${questionId}`);
-            if (dropdown) {
-                populateTechniqueDropdown(questionId, techniques);
-                dropdown.classList.remove('hidden');
-            }
-        }
+        // Add default skills for all positions
+        const defaultSkills = ['Attacks/Submissions', 'Sweeps', 'Escapes', 'Defense', 'Setups', 'Transitions'];
         
-        function hideTechniqueDropdown(questionId) {
-            setTimeout(() => {
-                const dropdown = document.getElementById(`techniqueDropdown${questionId}`);
-                if (dropdown) {
-                    dropdown.classList.add('hidden');
-                }
-            }, 200);
-        }
-        
-        function filterTechniques(value, questionId) {
-            const filtered = techniques.filter(tech => 
-                tech.toLowerCase().includes(value.toLowerCase())
-            );
-            populateTechniqueDropdown(questionId, filtered);
-        }
-        
-        function populateTechniqueDropdown(questionId, techniqueList) {
-            const dropdown = document.getElementById(`techniqueDropdown${questionId}`);
-            if (!dropdown) return;
+        function updateSkillOptions(questionId) {
+            const positionSelect = document.getElementById(`q${questionId}_position`);
+            const skillSelect = document.getElementById(`q${questionId}_skill`);
+            const hiddenInput = document.getElementById(`q${questionId}`);
+            const otherInput = document.getElementById(`q${questionId}_other`);
             
-            dropdown.innerHTML = '';
-            techniqueList.forEach(technique => {
-                const option = document.createElement('div');
-                option.className = 'technique-option';
-                option.textContent = technique;
-                option.onclick = () => selectTechnique(questionId, technique);
-                dropdown.appendChild(option);
-            });
-        }
-        
-        function selectTechnique(questionId, technique) {
-            const input = document.getElementById(`q${questionId}`);
-            const otherInput = document.getElementById(`techniqueOther${questionId}`);
-            const dropdown = document.getElementById(`techniqueDropdown${questionId}`);
+            const position = positionSelect.value;
             
-            if (technique === 'Other') {
-                input.value = '';
+            // Clear skill dropdown
+            skillSelect.innerHTML = '<option value="">Select skill type</option>';
+            
+            if (position === 'Other') {
+                skillSelect.disabled = true;
                 otherInput.classList.remove('hidden');
                 otherInput.focus();
             } else {
-                input.value = technique;
                 otherInput.classList.add('hidden');
                 otherInput.value = '';
+                
+                if (position) {
+                    skillSelect.disabled = false;
+                    const skills = skillsByPosition[position] || defaultSkills;
+                    skills.forEach(skill => {
+                        const option = document.createElement('option');
+                        option.value = skill;
+                        option.textContent = skill;
+                        skillSelect.appendChild(option);
+                    });
+                } else {
+                    skillSelect.disabled = true;
+                }
             }
             
-            dropdown.classList.add('hidden');
+            // Update hidden input
+            updateTechniqueValue(questionId);
+        }
+        
+        function updateTechniqueValue(questionId) {
+            const positionSelect = document.getElementById(`q${questionId}_position`);
+            const skillSelect = document.getElementById(`q${questionId}_skill`);
+            const hiddenInput = document.getElementById(`q${questionId}`);
+            const otherInput = document.getElementById(`q${questionId}_other`);
+            
+            const position = positionSelect.value;
+            const skill = skillSelect.value;
+            const otherValue = otherInput.value;
+            
+            if (position === 'Other' && otherValue) {
+                hiddenInput.value = otherValue;
+            } else if (position && skill) {
+                hiddenInput.value = `${position} - ${skill}`;
+            } else {
+                hiddenInput.value = '';
+            }
         }
         
         function showRPEDescription(value) {
