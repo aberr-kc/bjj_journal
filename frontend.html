@@ -1617,6 +1617,26 @@
                                     element.dispatchEvent(new Event('change'));
                                 }
                             }
+                            
+                            // Handle Class Technique dropdown specially
+                            const question = questions.find(q => q.id === response.question_id);
+                            if (question && question.question_text === 'Class Technique' && response.answer.includes(' - ')) {
+                                const [position, skill] = response.answer.split(' - ');
+                                const positionInput = document.getElementById(`q${response.question_id}_position`);
+                                const skillSelect = document.getElementById(`q${response.question_id}_skill`);
+                                
+                                if (positionInput) {
+                                    positionInput.value = position;
+                                    updateSkillOptions(response.question_id);
+                                    
+                                    setTimeout(() => {
+                                        if (skillSelect) {
+                                            skillSelect.value = skill;
+                                            updateTechniqueValue(response.question_id);
+                                        }
+                                    }, 100);
+                                }
+                            }
                         });
                     }, 200);
                 }
