@@ -4,11 +4,13 @@ from fastapi.security import HTTPBasicCredentials
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models import User
-from app.schemas import UserCreate, Token
+from app.schemas import UserCreate, Token, ChangePassword
 from app.dependencies import (
     authenticate_user, 
     create_access_token, 
     get_password_hash,
+    verify_password,
+    get_current_user,
     ACCESS_TOKEN_EXPIRE_MINUTES
 )
 
@@ -47,3 +49,21 @@ def login_user(user: UserCreate, db: Session = Depends(get_db)):
         data={"sub": authenticated_user.username}, expires_delta=access_token_expires
     )
     return {"access_token": access_token, "token_type": "bearer"}
+
+@router.put("/change-password")
+def change_password(
+    password_data: ChangePassword,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    if not verify_password(password_data.old_password, current_user.hashed_password):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Incorrect current password"
+        )
+    
+    new_hashed_password = get_password_hash(password_data.new_password)
+    current_user.hashed_password = new_hashed_password
+    db.commit()
+    
+    return {"message": "Password updated successfully"}

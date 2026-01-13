@@ -4,7 +4,6 @@ from fastapi.responses import FileResponse
 from app.database import engine, SessionLocal
 from app.models import Base, Question
 from app.routers import auth, entries, questions, analytics, profile
-from reset_endpoint import router as reset_router
 
 # Create database tables
 Base.metadata.create_all(bind=engine)
@@ -26,33 +25,10 @@ app.include_router(entries.router)
 app.include_router(questions.router)
 app.include_router(analytics.router)
 app.include_router(profile.router)
-app.include_router(reset_router)
 
 @app.get("/")
 def serve_frontend():
     return FileResponse("frontend.html")
-
-@app.get("/reset-password/{username}/{new_password}")
-def reset_password_direct(username: str, new_password: str):
-    import hashlib
-    from app.database import SessionLocal
-    from app.models import User
-    
-    db = SessionLocal()
-    try:
-        user = db.query(User).filter(User.username == username).first()
-        if not user:
-            return {"error": "User not found"}
-        
-        hashed_password = hashlib.sha256(new_password.encode()).hexdigest()
-        user.hashed_password = hashed_password
-        db.commit()
-        
-        return {"message": f"Password updated for {username}"}
-    except Exception as e:
-        return {"error": str(e)}
-    finally:
-        db.close()
 
 @app.get("/mobile")
 def serve_mobile():

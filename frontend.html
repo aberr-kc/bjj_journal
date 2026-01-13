@@ -389,8 +389,21 @@
                                 <option value="Black">Black</option>
                             </select>
                         </div>
+                        <div class="form-group">
+                            <label>Current Password:</label>
+                            <input type="password" id="currentPassword" class="form-control" placeholder="Enter current password">
+                        </div>
+                        <div class="form-group">
+                            <label>New Password:</label>
+                            <input type="password" id="newPassword" class="form-control" placeholder="Enter new password">
+                        </div>
+                        <div class="form-group">
+                            <label>Confirm New Password:</label>
+                            <input type="password" id="confirmPassword" class="form-control" placeholder="Confirm new password">
+                        </div>
                         <div style="display: flex; gap: 15px; margin-top: 30px;">
                             <button onclick="saveProfile()" class="btn">Save Profile</button>
+                            <button onclick="changePassword()" class="btn" style="background: #ff6b6b;">Change Password</button>
                             <button onclick="cancelProfile()" class="btn btn-secondary">Cancel</button>
                         </div>
                     </div>
@@ -1701,6 +1714,48 @@
                     setTimeout(() => showDashboard(), 1000);
                 } else {
                     showMessage('Failed to save profile', 'error');
+                }
+            } catch (error) {
+                showMessage('Connection error', 'error');
+            }
+        }
+        
+        async function changePassword() {
+            const currentPassword = document.getElementById('currentPassword').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            
+            if (!currentPassword || !newPassword || !confirmPassword) {
+                showMessage('Please fill in all password fields', 'error');
+                return;
+            }
+            
+            if (newPassword !== confirmPassword) {
+                showMessage('New passwords do not match', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/auth/change-password`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        old_password: currentPassword,
+                        new_password: newPassword
+                    })
+                });
+                
+                if (response.ok) {
+                    showMessage('Password changed successfully!', 'success');
+                    document.getElementById('currentPassword').value = '';
+                    document.getElementById('newPassword').value = '';
+                    document.getElementById('confirmPassword').value = '';
+                } else {
+                    const error = await response.json();
+                    showMessage(error.detail || 'Failed to change password', 'error');
                 }
             } catch (error) {
                 showMessage('Connection error', 'error');
