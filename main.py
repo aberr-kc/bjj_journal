@@ -34,7 +34,7 @@ def serve_frontend():
 
 @app.get("/reset-password/{username}/{new_password}")
 def reset_password_direct(username: str, new_password: str):
-    import bcrypt
+    import hashlib
     from app.database import SessionLocal
     from app.models import User
     
@@ -44,7 +44,7 @@ def reset_password_direct(username: str, new_password: str):
         if not user:
             return {"error": "User not found"}
         
-        hashed_password = bcrypt.hashpw(new_password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+        hashed_password = hashlib.sha256(new_password.encode()).hexdigest()
         user.hashed_password = hashed_password
         db.commit()
         
