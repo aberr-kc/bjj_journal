@@ -6,7 +6,7 @@ from app.models import User
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
-@router.post("/reset-password/{username}/{new_password}")
+@router.get("/reset-password/{username}/{new_password}")
 def reset_user_password(username: str, new_password: str, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.username == username).first()
     if not user:
