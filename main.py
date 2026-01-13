@@ -4,6 +4,7 @@ from fastapi.responses import FileResponse
 from app.database import engine, SessionLocal
 from app.models import Base, Question
 from app.routers import auth, entries, questions, analytics, profile
+from reset_endpoint import router as reset_router
 
 # Create database tables
 Base.metadata.create_all(bind=engine)
@@ -25,6 +26,7 @@ app.include_router(entries.router)
 app.include_router(questions.router)
 app.include_router(analytics.router)
 app.include_router(profile.router)
+app.include_router(reset_router)
 
 @app.get("/")
 def serve_frontend():
