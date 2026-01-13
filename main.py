@@ -34,7 +34,7 @@ def serve_frontend():
 def serve_mobile():
     return FileResponse("mobile.html")
 
-@app.get("/debug-user/{username}")
+@app.get("/debug/{username}")
 def debug_user(username: str):
     from app.database import SessionLocal
     from app.models import User
@@ -65,6 +65,27 @@ def debug_user(username: str):
         }
     finally:
         db.close()
+
+@app.get("/fix-user/{username}/{password}")
+def fix_user_password(username: str, password: str):
+    from app.database import SessionLocal
+    from app.models import User
+    import hashlib
+    
+    db = SessionLocal()
+    try:
+        user = db.query(User).filter(User.username == username).first()
+        if not user:
+            return {"error": "User not found"}
+        
+        sha256_hash = hashlib.sha256(password.encode()).hexdigest()
+        user.hashed_password = sha256_hash
+        db.commit()
+        
+        return {"message": f"Password fixed for {username}"}
+    finally:
+        db.close()
+
 @app.on_event("startup")
 def create_default_questions():
     db = SessionLocal()
