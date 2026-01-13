@@ -893,11 +893,14 @@
                 }
                 
                 if (response.ok) {
+                    const wasEditing = editingEntry !== null;
                     editingEntry = null;
                     document.getElementById('entryForm').classList.add('hidden');
-                    showEntries();
-                    loadDashboard();
-                    showMessage(editingEntry ? 'Entry updated successfully!' : 'Entry saved successfully!', 'success');
+                    
+                    // Reload dashboard and show it
+                    await loadDashboard();
+                    showDashboard();
+                    showMessage(wasEditing ? 'Entry updated successfully!' : 'Entry saved successfully!', 'success');
                 } else {
                     showMessage('Failed to save entry', 'error');
                 }
@@ -1629,6 +1632,10 @@
                     const entry = await response.json();
                     editingEntry = entry;
                     
+                    // Hide all sections and show edit page
+                    document.getElementById('dashboard').classList.add('hidden');
+                    document.getElementById('activitiesSection').classList.add('hidden');
+                    document.getElementById('profileSection').classList.add('hidden');
                     document.getElementById('entryForm').classList.remove('hidden');
                     document.getElementById('formTitle').textContent = 'Edit Training Entry';
                     
@@ -1702,7 +1709,8 @@
         function cancelEdit() {
             editingEntry = null;
             document.getElementById('formTitle').textContent = 'New Training Entry';
-            toggleEntryForm();
+            document.getElementById('entryForm').classList.add('hidden');
+            showDashboard();
         }
 
         function showMessage(message, type) {
