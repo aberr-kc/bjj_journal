@@ -983,14 +983,18 @@
                     const percentage = ((count / dashboardData.total_sessions) * 100).toFixed(1);
                     const barWidth = maxCount > 0 ? (count / maxCount) * 100 : 0;
                     
-                    // Color coding by position type
+                    // Color coding by skill type
                     let barColor = '#00d4aa'; // Default teal
-                    if (position.toLowerCase().includes('guard')) {
-                        barColor = '#4ecdc4'; // Light blue for guards
-                    } else if (position.toLowerCase().includes('mount') || position.toLowerCase().includes('side control') || position.toLowerCase().includes('back')) {
-                        barColor = '#ff6b6b'; // Red for dominant positions
-                    } else if (position.toLowerCase().includes('half') || position.toLowerCase().includes('turtle')) {
-                        barColor = '#ffe66d'; // Yellow for transitional positions
+                    if (position.toLowerCase().includes('attacks') || position.toLowerCase().includes('submission')) {
+                        barColor = '#ff6b6b'; // Red for attacks/submissions
+                    } else if (position.toLowerCase().includes('sweep')) {
+                        barColor = '#4ecdc4'; // Light blue for sweeps
+                    } else if (position.toLowerCase().includes('escape')) {
+                        barColor = '#ffe66d'; // Yellow for escapes
+                    } else if (position.toLowerCase().includes('defense')) {
+                        barColor = '#a8e6cf'; // Light green for defense
+                    } else if (position.toLowerCase().includes('setup') || position.toLowerCase().includes('transition')) {
+                        barColor = '#ffd3a5'; // Light orange for setups/transitions
                     }
                     
                     chartsHTML += `
@@ -1013,16 +1017,24 @@
                         <div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #2a3038; font-size: 12px; color: #8a9ba8;">
                             <div style="display: flex; gap: 20px; flex-wrap: wrap;">
                                 <div style="display: flex; align-items: center; gap: 8px;">
-                                    <div style="width: 14px; height: 14px; background: #4ecdc4; border-radius: 3px;"></div>
-                                    <span>Guards</span>
+                                    <div style="width: 14px; height: 14px; background: #ff6b6b; border-radius: 3px;"></div>
+                                    <span>Attacks/Submissions</span>
                                 </div>
                                 <div style="display: flex; align-items: center; gap: 8px;">
-                                    <div style="width: 14px; height: 14px; background: #ff6b6b; border-radius: 3px;"></div>
-                                    <span>Dominant</span>
+                                    <div style="width: 14px; height: 14px; background: #4ecdc4; border-radius: 3px;"></div>
+                                    <span>Sweeps</span>
                                 </div>
                                 <div style="display: flex; align-items: center; gap: 8px;">
                                     <div style="width: 14px; height: 14px; background: #ffe66d; border-radius: 3px;"></div>
-                                    <span>Transitional</span>
+                                    <span>Escapes</span>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <div style="width: 14px; height: 14px; background: #a8e6cf; border-radius: 3px;"></div>
+                                    <span>Defense</span>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <div style="width: 14px; height: 14px; background: #ffd3a5; border-radius: 3px;"></div>
+                                    <span>Setups/Transitions</span>
                                 </div>
                                 <div style="display: flex; align-items: center; gap: 8px;">
                                     <div style="width: 14px; height: 14px; background: #00d4aa; border-radius: 3px;"></div>
