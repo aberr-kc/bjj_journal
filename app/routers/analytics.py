@@ -64,8 +64,7 @@ def get_dashboard_stats(
         entry_ids = [e.id for e in entries]
         try:
             responses = db.query(Response).filter(Response.entry_id.in_(entry_ids)).all()
-        except Exception as e:
-            print(f"Error loading responses: {e}")
+        except Exception:
             responses = []
     
     # RPE analysis
@@ -267,10 +266,7 @@ def get_dashboard_stats(
             "rounds_by_session_type": rounds_by_session_type,
             "rpe_rounds_correlation": rpe_rounds_correlation
         }
-    except Exception as e:
-        print(f"Dashboard error: {e}")
-        import traceback
-        traceback.print_exc()
+    except Exception:
         # Return minimal safe data
         return {
             "total_sessions": 0,
