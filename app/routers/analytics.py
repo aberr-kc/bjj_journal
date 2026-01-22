@@ -67,6 +67,26 @@ def get_dashboard_stats(
         except Exception:
             responses = []
         
+        # Debug: Check what we have
+        if not responses:
+            # Return debug info instead of zeros
+            return {
+                "total_sessions": total_sessions,
+                "this_month": this_month,
+                "avg_rpe": 0,
+                "total_rounds": 0,
+                "session_types": {"DEBUG": f"Found {len(entries)} entries but 0 responses"},
+                "training_types": {},
+                "submissions": {},
+                "positions": {},
+                "rpe_distribution": {},
+                "monthly_trend": [],
+                "rpe_trend": [],
+                "weekly_volume": [],
+                "rounds_by_session_type": {"Gi": 0, "No Gi": 0, "Both": 0},
+                "rpe_rounds_correlation": []
+            }
+        
         # RPE analysis
         rpe_responses = [r for r in responses if r.question and "Rate of Perceived Exertion" in r.question.question_text]
         avg_rpe = sum(int(r.answer) for r in rpe_responses) / len(rpe_responses) if rpe_responses else 0
