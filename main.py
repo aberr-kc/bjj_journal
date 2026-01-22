@@ -38,14 +38,12 @@ def serve_mobile():
 
 @app.on_event("startup")
 def create_default_questions():
-    # Only seed data in local development
-    if os.getenv("DATABASE_URL"):
-        return  # Skip seeding in production
-        
     db = SessionLocal()
     try:
         # Check if questions already exist
-        if db.query(Question).first():
+        existing_questions = db.query(Question).count()
+        
+        if existing_questions > 0:
             return
         
         # Create new BJJ questions
