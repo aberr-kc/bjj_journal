@@ -4,9 +4,11 @@ from fastapi.responses import FileResponse
 from app.database import engine, SessionLocal
 from app.models import Base, Question
 from app.routers import auth, entries, questions, analytics, profile
+import os
 
-# Create database tables
-Base.metadata.create_all(bind=engine)
+# Create database tables (only for local development)
+if not os.getenv("DATABASE_URL"):
+    Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="BJJ Training Journal", version="1.0.1")
 
@@ -36,6 +38,10 @@ def serve_mobile():
 
 @app.on_event("startup")
 def create_default_questions():
+    # Only seed data in local development
+    if os.getenv("DATABASE_URL"):
+        return  # Skip seeding in production
+        
     db = SessionLocal()
     try:
         # Check if questions already exist
