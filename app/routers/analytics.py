@@ -64,7 +64,7 @@ def get_dashboard_stats(
     responses = db.query(Response).filter(Response.entry_id.in_(entry_ids)).all()
     
     # RPE analysis
-    rpe_responses = [r for r in responses if "Rate of Perceived Exertion" in r.question.question_text]
+    rpe_responses = [r for r in responses if r.question and "Rate of Perceived Exertion" in r.question.question_text]
     avg_rpe = sum(int(r.answer) for r in rpe_responses) / len(rpe_responses) if rpe_responses else 0
     
     # RPE distribution
@@ -74,23 +74,23 @@ def get_dashboard_stats(
         rpe_distribution[rpe] = rpe_distribution.get(rpe, 0) + 1
     
     # Total rounds
-    rounds_responses = [r for r in responses if "Rounds Rolled" in r.question.question_text]
+    rounds_responses = [r for r in responses if r.question and "Rounds Rolled" in r.question.question_text]
     total_rounds = sum(int(r.answer) for r in rounds_responses if r.answer.isdigit())
     
     # Session types
-    session_type_responses = [r for r in responses if "Session Type" in r.question.question_text]
+    session_type_responses = [r for r in responses if r.question and "Session Type" in r.question.question_text]
     session_types = {}
     for r in session_type_responses:
         session_types[r.answer] = session_types.get(r.answer, 0) + 1
     
     # Training types
-    training_type_responses = [r for r in responses if r.question.question_text == "Training"]
+    training_type_responses = [r for r in responses if r.question and r.question.question_text == "Training"]
     training_types = {}
     for r in training_type_responses:
         training_types[r.answer] = training_types.get(r.answer, 0) + 1
     
     # Submissions analysis
-    technique_responses = [r for r in responses if "Class Technique" in r.question.question_text]
+    technique_responses = [r for r in responses if r.question and "Class Technique" in r.question.question_text]
     submissions = {}
     positions = {}
     for r in technique_responses:
@@ -129,7 +129,7 @@ def get_dashboard_stats(
     rpe_trend = []
     entries_sorted = sorted(entries, key=lambda x: x.date)
     for entry in entries_sorted[-10:]:
-        entry_rpe = next((int(r.answer) for r in responses if r.entry_id == entry.id and "Rate of Perceived Exertion" in r.question.question_text), None)
+        entry_rpe = next((int(r.answer) for r in responses if r.entry_id == entry.id and r.question and "Rate of Perceived Exertion" in r.question.question_text), None)
         if entry_rpe:
             rpe_trend.append({
                 "date": entry.date.strftime("%d/%m"),
@@ -144,7 +144,7 @@ def get_dashboard_stats(
             day_start = now - timedelta(days=i+1)
             day_end = day_start + timedelta(days=1)
             day_entries = [e for e in entries if day_start <= e.date < day_end]
-            day_rounds = sum(int(r.answer) for r in responses if r.entry_id in [e.id for e in day_entries] and "Rounds Rolled" in r.question.question_text and r.answer.isdigit())
+            day_rounds = sum(int(r.answer) for r in responses if r.entry_id in [e.id for e in day_entries] and r.question and "Rounds Rolled" in r.question.question_text and r.answer.isdigit())
             
             weekly_volume.append({
                 "period": day_start.strftime("%d/%m"),
@@ -158,7 +158,7 @@ def get_dashboard_stats(
             week_start = now - timedelta(days=7*(i+1))
             week_end = week_start + timedelta(days=7)
             week_entries = [e for e in entries if week_start <= e.date <= week_end]
-            week_rounds = sum(int(r.answer) for r in responses if r.entry_id in [e.id for e in week_entries] and "Rounds Rolled" in r.question.question_text and r.answer.isdigit())
+            week_rounds = sum(int(r.answer) for r in responses if r.entry_id in [e.id for e in week_entries] and r.question and "Rounds Rolled" in r.question.question_text and r.answer.isdigit())
             
             start_str = week_start.strftime("%d/%m")
             end_str = (week_end - timedelta(days=1)).strftime("%d/%m")
@@ -180,7 +180,7 @@ def get_dashboard_stats(
                 month_end = month_end - timedelta(days=month_end.day)
             
             month_entries = [e for e in entries if month_start <= e.date <= month_end]
-            month_rounds = sum(int(r.answer) for r in responses if r.entry_id in [e.id for e in month_entries] and "Rounds Rolled" in r.question.question_text and r.answer.isdigit())
+            month_rounds = sum(int(r.answer) for r in responses if r.entry_id in [e.id for e in month_entries] and r.question and "Rounds Rolled" in r.question.question_text and r.answer.isdigit())
             
             weekly_volume.append({
                 "period": month_start.strftime("%b %Y"),
@@ -199,7 +199,7 @@ def get_dashboard_stats(
                 month_end = month_end - timedelta(days=month_end.day)
             
             month_entries = [e for e in entries if month_start <= e.date <= month_end]
-            month_rounds = sum(int(r.answer) for r in responses if r.entry_id in [e.id for e in month_entries] and "Rounds Rolled" in r.question.question_text and r.answer.isdigit())
+            month_rounds = sum(int(r.answer) for r in responses if r.entry_id in [e.id for e in month_entries] and r.question and "Rounds Rolled" in r.question.question_text and r.answer.isdigit())
             
             weekly_volume.append({
                 "period": month_start.strftime("%b %Y"),
@@ -213,7 +213,7 @@ def get_dashboard_stats(
             week_start = now - timedelta(days=7*(i+1))
             week_end = week_start + timedelta(days=7)
             week_entries = [e for e in entries if week_start <= e.date <= week_end]
-            week_rounds = sum(int(r.answer) for r in responses if r.entry_id in [e.id for e in week_entries] and "Rounds Rolled" in r.question.question_text and r.answer.isdigit())
+            week_rounds = sum(int(r.answer) for r in responses if r.entry_id in [e.id for e in week_entries] and r.question and "Rounds Rolled" in r.question.question_text and r.answer.isdigit())
             
             start_str = week_start.strftime("%d/%m")
             end_str = (week_end - timedelta(days=1)).strftime("%d/%m")
@@ -230,16 +230,16 @@ def get_dashboard_stats(
     # Rounds by session type
     rounds_by_session_type = {"Gi": 0, "No Gi": 0, "Both": 0}
     for entry in entries:
-        entry_session_type = next((r.answer for r in responses if r.entry_id == entry.id and "Session Type" in r.question.question_text), None)
-        entry_rounds = next((int(r.answer) for r in responses if r.entry_id == entry.id and "Rounds Rolled" in r.question.question_text and r.answer.isdigit()), 0)
+        entry_session_type = next((r.answer for r in responses if r.entry_id == entry.id and r.question and "Session Type" in r.question.question_text), None)
+        entry_rounds = next((int(r.answer) for r in responses if r.entry_id == entry.id and r.question and "Rounds Rolled" in r.question.question_text and r.answer.isdigit()), 0)
         if entry_session_type and entry_rounds:
             rounds_by_session_type[entry_session_type] += entry_rounds
     
     # RPE vs Rounds correlation data
     rpe_rounds_correlation = []
     for entry in entries:
-        entry_rpe = next((int(r.answer) for r in responses if r.entry_id == entry.id and "Rate of Perceived Exertion" in r.question.question_text), None)
-        entry_rounds = next((int(r.answer) for r in responses if r.entry_id == entry.id and "Rounds Rolled" in r.question.question_text and r.answer.isdigit()), None)
+        entry_rpe = next((int(r.answer) for r in responses if r.entry_id == entry.id and r.question and "Rate of Perceived Exertion" in r.question.question_text), None)
+        entry_rounds = next((int(r.answer) for r in responses if r.entry_id == entry.id and r.question and "Rounds Rolled" in r.question.question_text and r.answer.isdigit()), None)
         if entry_rpe and entry_rounds:
             rpe_rounds_correlation.append({
                 "rpe": entry_rpe,

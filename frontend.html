@@ -872,16 +872,45 @@
         async function loadDashboard() {
             try {
                 const period = document.getElementById('periodFilter')?.value || '30d';
+                console.log('Loading dashboard with period:', period);
                 const response = await fetch(`${API_BASE}/analytics/dashboard?period=${period}`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 
+                console.log('Dashboard response status:', response.status);
+                
                 if (response.ok) {
                     dashboardData = await response.json();
+                    console.log('Dashboard data:', dashboardData);
                     renderDashboard();
+                } else {
+                    const errorText = await response.text();
+                    console.error('Dashboard API error:', response.status, errorText);
+                    // Show error message to user
+                    const statsContainer = document.getElementById('dashboardStats');
+                    if (statsContainer) {
+                        statsContainer.innerHTML = `
+                            <div style="text-align: center; color: #ff6b6b; padding: 20px;">
+                                <h3>Dashboard Error</h3>
+                                <p>Failed to load dashboard data (Status: ${response.status})</p>
+                                <p style="font-size: 12px; color: #8a9ba8;">${errorText}</p>
+                            </div>
+                        `;
+                    }
                 }
             } catch (error) {
                 console.error('Failed to load dashboard:', error);
+                // Show connection error to user
+                const statsContainer = document.getElementById('dashboardStats');
+                if (statsContainer) {
+                    statsContainer.innerHTML = `
+                        <div style="text-align: center; color: #ff6b6b; padding: 20px;">
+                            <h3>Connection Error</h3>
+                            <p>Unable to connect to dashboard API</p>
+                            <p style="font-size: 12px; color: #8a9ba8;">${error.message}</p>
+                        </div>
+                    `;
+                }
             }
         }
         
