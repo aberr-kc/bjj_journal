@@ -15,53 +15,58 @@ def get_dashboard_stats(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ) -> Dict[str, Any]:
-    # Calculate date filter
-    now = datetime.now()
-    if period == "7d":
-        start_date = now - timedelta(days=7)
-    elif period == "30d":
-        start_date = now - timedelta(days=30)
-    elif period == "this_month":
-        start_date = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-    elif period == "6m":
-        start_date = now - timedelta(days=180)
-    elif period == "1y":
-        start_date = now - timedelta(days=365)
-    else:  # "all"
-        start_date = None
-    
-    # Get filtered entries
-    if start_date:
-        entries = db.query(Entry).filter(
-            Entry.user_id == current_user.id,
-            Entry.date >= start_date
-        ).all()
-    else:
-        entries = db.query(Entry).filter(Entry.user_id == current_user.id).all()
-    
-    if not entries:
-        return {
-            "total_sessions": 0,
-            "this_month": 0,
-            "avg_rpe": 0,
-            "total_rounds": 0,
-            "session_types": {},
-            "training_types": {},
-            "rpe_distribution": {},
-            "monthly_trend": []
-        }
-    
-    # Basic stats
-    total_sessions = len(entries)
-    
-    # This month sessions
-    current_month = datetime.now().month
-    current_year = datetime.now().year
-    this_month = len([e for e in entries if e.date.month == current_month and e.date.year == current_year])
-    
-    # Get all responses for analysis
-    entry_ids = [e.id for e in entries]
-    responses = db.query(Response).filter(Response.entry_id.in_(entry_ids)).all()
+    try:
+        # Calculate date filter
+        now = datetime.now()
+        if period == "7d":
+            start_date = now - timedelta(days=7)
+        elif period == "30d":
+            start_date = now - timedelta(days=30)
+        elif period == "this_month":
+            start_date = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        elif period == "6m":
+            start_date = now - timedelta(days=180)
+        elif period == "1y":
+            start_date = now - timedelta(days=365)
+        else:  # "all"
+            start_date = None
+        
+        # Get filtered entries
+        if start_date:
+            entries = db.query(Entry).filter(
+                Entry.user_id == current_user.id,
+                Entry.date >= start_date
+            ).all()
+        else:
+            entries = db.query(Entry).filter(Entry.user_id == current_user.id).all()
+        
+        if not entries:
+            return {
+                "total_sessions": 0,
+                "this_month": 0,
+                "avg_rpe": 0,
+                "total_rounds": 0,
+                "session_types": {},
+                "training_types": {},
+                "rpe_distribution": {},
+                "monthly_trend": []
+            }
+        
+        # Basic stats
+        total_sessions = len(entries)
+        
+        # This month sessions
+        current_month = datetime.now().month
+        current_year = datetime.now().year
+        this_month = len([e for e in entries if e.date.month == current_month and e.date.year == current_year])
+        
+        # Get all responses for analysis - with error handling
+        entry_ids = [e.id for e in entries]
+        try:
+            responses = db.query(Response).filter(Response.entry_id.in_(entry_ids)).all()
+        except Exception as e:
+            print(f"Error loading responses: {e}")
+            responses = []
     
     # RPE analysis
     rpe_responses = [r for r in responses if r.question and "Rate of Perceived Exertion" in r.question.question_text]
@@ -246,19 +251,40 @@ def get_dashboard_stats(
                 "rounds": entry_rounds
             })
     
-    return {
-        "total_sessions": total_sessions,
-        "this_month": this_month,
-        "avg_rpe": round(avg_rpe, 1),
-        "total_rounds": total_rounds,
-        "session_types": session_types,
-        "training_types": training_types,
-        "submissions": submissions,
-        "positions": positions,
-        "rpe_distribution": rpe_distribution,
-        "monthly_trend": list(reversed(monthly_trend)),
-        "rpe_trend": rpe_trend,
-        "weekly_volume": weekly_volume,
-        "rounds_by_session_type": rounds_by_session_type,
-        "rpe_rounds_correlation": rpe_rounds_correlation
-    }
+        return {
+            "total_sessions": total_sessions,
+            "this_month": this_month,
+            "avg_rpe": round(avg_rpe, 1),
+            "total_rounds": total_rounds,
+            "session_types": session_types,
+            "training_types": training_types,
+            "submissions": submissions,
+            "positions": positions,
+            "rpe_distribution": rpe_distribution,
+            "monthly_trend": list(reversed(monthly_trend)),
+            "rpe_trend": rpe_trend,
+            "weekly_volume": weekly_volume,
+            "rounds_by_session_type": rounds_by_session_type,
+            "rpe_rounds_correlation": rpe_rounds_correlation
+        }
+    except Exception as e:
+        print(f"Dashboard error: {e}")
+        import traceback
+        traceback.print_exc()
+        # Return minimal safe data
+        return {
+            "total_sessions": 0,
+            "this_month": 0,
+            "avg_rpe": 0,
+            "total_rounds": 0,
+            "session_types": {},
+            "training_types": {},
+            "submissions": {},
+            "positions": {},
+            "rpe_distribution": {},
+            "monthly_trend": [],
+            "rpe_trend": [],
+            "weekly_volume": [],
+            "rounds_by_session_type": {"Gi": 0, "No Gi": 0, "Both": 0},
+            "rpe_rounds_correlation": []
+        }
