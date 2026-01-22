@@ -41,12 +41,14 @@ def get_dashboard_stats(
             entries = db.query(Entry).filter(Entry.user_id == current_user.id).all()
         
         if not entries:
+            # Debug: Check if any entries exist at all
+            all_entries_count = db.query(Entry).count()
             return {
                 "total_sessions": 0,
                 "this_month": 0,
                 "avg_rpe": 0,
                 "total_rounds": 0,
-                "session_types": {},
+                "session_types": {"DEBUG": f"No entries for user {current_user.id}. Total entries in DB: {all_entries_count}"},
                 "training_types": {},
                 "rpe_distribution": {},
                 "monthly_trend": []
