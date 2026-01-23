@@ -40,6 +40,10 @@ def get_dashboard_stats(
         else:
             entries = db.query(Entry).filter(Entry.user_id == current_user.id).all()
         
+        print(f"DEBUG: Found {len(entries)} entries for user {current_user.username} (ID: {current_user.id})")
+        for entry in entries:
+            print(f"  Entry {entry.id}: date={entry.date}, session_type={entry.session_type}")
+        
         if not entries:
             # Check if entries exist for any user (debugging)
             all_entries = db.query(Entry).all()
