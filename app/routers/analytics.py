@@ -1,9 +1,8 @@
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 from sqlalchemy import func, extract
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Dict, Any, Optional
-import pytz
 from app.database import get_db
 from app.models import Entry, Response, Question, User
 from app.dependencies import get_current_user
@@ -18,7 +17,7 @@ def get_dashboard_stats(
 ) -> Dict[str, Any]:
     try:
         # Calculate date filter
-        now = datetime.now(pytz.UTC)
+        now = datetime.now(timezone.utc)
         if period == "7d":
             start_date = now - timedelta(days=7)
         elif period == "30d":
