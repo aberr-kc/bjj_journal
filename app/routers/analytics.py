@@ -82,9 +82,14 @@ def get_dashboard_stats(
         
         # Get all responses for analysis - with error handling
         entry_ids = [e.id for e in entries]
+        print(f"DEBUG: Looking for responses for entry IDs: {entry_ids}")
         try:
             responses = db.query(Response).filter(Response.entry_id.in_(entry_ids)).all()
-        except Exception:
+            print(f"DEBUG: Found {len(responses)} responses")
+            for r in responses:
+                print(f"  Response: entry_id={r.entry_id}, question_id={r.question_id}, answer='{r.answer}'")
+        except Exception as e:
+            print(f"DEBUG: Error getting responses: {e}")
             responses = []
         
         # Debug: Check what we have
@@ -306,7 +311,10 @@ def get_dashboard_stats(
             "rounds_by_session_type": rounds_by_session_type,
             "rpe_rounds_correlation": rpe_rounds_correlation
         }
-    except Exception:
+    except Exception as e:
+        print(f"DEBUG: Exception in dashboard: {str(e)}")
+        import traceback
+        traceback.print_exc()
         # Return minimal safe data
         return {
             "total_sessions": 0,
