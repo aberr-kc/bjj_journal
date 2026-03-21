@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
+from sqlalchemy import text
 from app.database import engine, SessionLocal
 from app.models import Base, Question
 from app.routers import auth, entries, questions, analytics, profile, goals, injuries, recommendations
@@ -9,6 +10,25 @@ import os
 
 # Create database tables
 Base.metadata.create_all(bind=engine)
+
+# Run column migrations for existing tables
+def run_migrations():
+    with engine.connect() as conn:
+        migrations = [
+            "ALTER TABLE entries ADD COLUMN IF NOT EXISTS injured_during_session BOOLEAN DEFAULT FALSE",
+            "ALTER TABLE entries ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP",
+        ]
+        for sql in migrations:
+            try:
+                conn.execute(text(sql))
+                conn.commit()
+            except Exception as e:
+                print(f"Migration skipped: {e}")
+
+try:
+    run_migrations()
+except Exception as e:
+    print(f"Migration error: {e}")
 
 app = FastAPI(title="BJJ Training Journal", version="1.0.1")
 
