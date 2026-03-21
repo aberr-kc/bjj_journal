@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session, joinedload
 from datetime import datetime, timedelta, timezone
 from typing import List, Dict, Any
 from app.database import get_db
-from app.models import Entry, Response, Question, User, InjuryLog
+from app.models import Entry, Response, Question, User, InjuryLog, UserGoal
 from app.dependencies import get_current_user
 
 router = APIRouter(prefix="/recommendations", tags=["recommendations"])
@@ -315,6 +315,53 @@ def recommend_intensity(rpe_data: List[Dict], total_sessions: int, active_injuri
     return recs
 
 
+def recommend_goal_adjustment(db: Session, user_id: int, entries: List) -> List[Dict]:
+    """Suggest adjusting goals when actual training consistently misses or exceeds the target."""
+    recs = []
+    goal = db.query(UserGoal).filter(UserGoal.user_id == user_id, UserGoal.is_active == True).first()
+    if not goal:
+        return recs
+
+    target = goal.weekly_sessions_target
+    # Need at least 4 weeks of data to judge consistency
+    four_weeks_ago = datetime.utcnow() - timedelta(days=28)
+    recent_entries = [e for e in entries if e.date >= four_weeks_ago]
+    if not recent_entries:
+        return recs
+
+    weeks_span = max((datetime.utcnow() - min(e.date for e in recent_entries)).days / 7, 1)
+    if weeks_span < 3:
+        return recs
+
+    avg_per_week = len(recent_entries) / weeks_span
+    ratio = avg_per_week / target if target > 0 else 0
+
+    if ratio < 0.6:
+        suggested = max(1, round(avg_per_week + 1))
+        recs.append(build_recommendation(
+            type_="goal",
+            priority="medium",
+            title="Goal may be too ambitious",
+            message=f"Your target is {target} sessions/week but you're averaging {avg_per_week:.1f}. "
+                    f"Consider adjusting to {suggested} sessions/week to build consistency first.",
+            action="Adjust your weekly goal in Profile → Goals.",
+            data={"current_target": target, "avg_sessions": round(avg_per_week, 1), "suggested_target": suggested}
+        ))
+    elif ratio > 1.4 and avg_per_week >= target + 2:
+        suggested = round(avg_per_week)
+        recs.append(build_recommendation(
+            type_="goal",
+            priority="low",
+            title="You're exceeding your goal",
+            message=f"You're averaging {avg_per_week:.1f} sessions/week against a target of {target}. "
+                    f"Consider raising it to {suggested} to keep pushing yourself.",
+            action="Raise your weekly goal in Profile → Goals.",
+            data={"current_target": target, "avg_sessions": round(avg_per_week, 1), "suggested_target": suggested}
+        ))
+
+    return recs
+
+
 # --- Main endpoint ---
 
 @router.get("/")
@@ -340,6 +387,9 @@ def get_recommendations(
         all_recs += recommend_submissions(technique_data, total_sessions)
     if gates["intensity"]:
         all_recs += recommend_intensity(rpe_data, total_sessions, active_injuries)
+
+    # Goal adjustment (no gate — just needs an active goal + enough history)
+    all_recs += recommend_goal_adjustment(db, current_user.id, entries)
 
     # Sort by priority: high → medium → low
     priority_order = {"high": 0, "medium": 1, "low": 2}

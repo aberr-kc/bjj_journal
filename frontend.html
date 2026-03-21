@@ -178,6 +178,7 @@
             align-items: center;
             gap: 8px;
         }
+
         .rec-items-row {
             display: flex;
             gap: 14px;
@@ -225,6 +226,7 @@
         .rec-category-position { background: rgba(99,102,241,0.2); color: #a5b4fc; }
         .rec-category-submission { background: rgba(239,68,68,0.2); color: #fca5a5; }
         .rec-category-intensity { background: rgba(245,158,11,0.2); color: #fcd34d; }
+        .rec-category-goal { background: rgba(34,197,94,0.2); color: #86efac; }
         .rec-title {
             font-size: 14px;
             font-weight: 700;
@@ -674,7 +676,7 @@
                         <div style="color: #ff6b6b; font-weight: 600; font-size: 16px;">⚠️ Injury recorded - Consider a break or light drilling</div>
                         <button onclick="markInjuryHealed()" class="btn" style="background: #ff6b6b; padding: 8px 16px;">Healed Up?</button>
                     </div>
-                    <div class="rec-card">
+                    <div id="recCard" class="rec-card">
                         <div class="rec-card-title">🎯 Training Recommendations</div>
                         <div id="recommendationsContainer">
                             <div class="rec-empty">Loading recommendations...</div>
@@ -802,6 +804,10 @@
                             <div id="goalProgress"></div>
                         </div>
                         <div id="goalsMessage"></div>
+                        <div style="display: flex; align-items: center; gap: 8px; margin-top: 20px;">
+                            <input type="checkbox" id="hideRecommendations" style="width: auto; margin: 0; accent-color: #ef4444;" onchange="toggleHideRecommendations()">
+                            <label for="hideRecommendations" style="margin: 0; color: #94a3b8; font-size: 14px; cursor: pointer;">Hide Recommendations</label>
+                        </div>
                         <div style="display: flex; gap: 15px; margin-top: 30px;">
                             <button onclick="saveGoals()" class="btn">Save Goals</button>
                             <button onclick="loadGoalProgress()" class="btn btn-secondary">View Progress</button>
@@ -2525,6 +2531,9 @@
             } catch (error) {
                 console.error('Failed to load goals:', error);
             }
+            // Restore hide recommendations checkbox
+            const hideRecs = localStorage.getItem('bjj_hide_recommendations') === 'true';
+            document.getElementById('hideRecommendations').checked = hideRecs;
         }
         
         async function saveGoals() {
@@ -2570,6 +2579,13 @@
                 showGoalsMessage('Connection error', 'error');
             }
         }
+
+        function toggleHideRecommendations() {
+            const checked = document.getElementById('hideRecommendations').checked;
+            localStorage.setItem('bjj_hide_recommendations', checked ? 'true' : 'false');
+            const recCard = document.getElementById('recCard');
+            if (recCard) recCard.style.display = checked ? 'none' : '';
+        }
         
         async function loadGoalProgress() {
             try {
@@ -2607,7 +2623,28 @@
         
         async function loadRecommendations() {
             const container = document.getElementById('recommendationsContainer');
-            if (!container) return;
+            const recCard = document.getElementById('recCard');
+            const dashboard = document.getElementById('dashboard');
+            if (!container || !recCard || !dashboard) return;
+
+            if (localStorage.getItem('bjj_hide_recommendations') === 'true') {
+                recCard.style.display = 'none';
+                return;
+            }
+            recCard.style.display = '';
+
+
+
+            function moveCardToBottom() {
+                dashboard.appendChild(recCard);
+            }
+            function moveCardToTop() {
+                const firstCard = dashboard.querySelector('.card, .rec-card');
+                if (firstCard && firstCard !== recCard) {
+                    dashboard.insertBefore(recCard, firstCard);
+                }
+            }
+
             try {
                 const response = await fetch(`${API_BASE}/recommendations/`, {
                     headers: { 'Authorization': `Bearer ${token}` }
@@ -2618,14 +2655,19 @@
                 // Edge state: new user with low data
                 if (data.meta && data.meta.low_data) {
                     container.innerHTML = `<div class="rec-onboarding">📋 Log a few sessions to unlock personalised recommendations.</div>`;
+                    moveCardToBottom();
                     return;
                 }
 
                 // Edge state: no recommendations
                 if (!data.recommendations || data.recommendations.length === 0) {
                     container.innerHTML = `<div class="rec-empty">✅ No recommendations — training is balanced.</div>`;
+                    moveCardToBottom();
                     return;
                 }
+
+                // Has recommendations — keep at top
+                moveCardToTop();
 
                 // If injury active, pin intensity rec to top
                 let recs = [...data.recommendations];
@@ -2637,9 +2679,9 @@
                     }
                 }
 
-                const icons = { position: '🥋', submission: '🔒', intensity: '⚡' };
+                const icons = { position: '🥋', submission: '🔒', intensity: '⚡', goal: '🎯' };
                 const priorityIcons = { high: '🚨', medium: '⚠️', low: '💡' };
-                const categoryClass = { position: 'rec-category-position', submission: 'rec-category-submission', intensity: 'rec-category-intensity' };
+                const categoryClass = { position: 'rec-category-position', submission: 'rec-category-submission', intensity: 'rec-category-intensity', goal: 'rec-category-goal' };
                 const ctaLabels = {
                     position: 'Log Session',
                     submission: 'Log Session',
@@ -2687,6 +2729,7 @@
                 `).join('') + '</div>';
             } catch (e) {
                 container.innerHTML = '<div class="rec-empty">Could not load recommendations.</div>';
+                moveCardToBottom();
             }
         }
 
