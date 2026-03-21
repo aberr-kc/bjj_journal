@@ -45,32 +45,16 @@ def get_dashboard_stats(
             print(f"  Entry {entry.id}: date={entry.date}, session_type={entry.session_type}")
         
         if not entries:
-            # Check if entries exist for any user (debugging)
-            all_entries = db.query(Entry).all()
-            current_user_info = f"Current user: {current_user.username} (ID: {current_user.id})"
-            if all_entries:
-                # Entries exist but not for this user - return debug info
-                return {
-                    "total_sessions": 0,
-                    "this_month": 0,
-                    "avg_rpe": 0,
-                    "total_rounds": 0,
-                    "session_types": {"DEBUG": f"{current_user_info}. Found {len(all_entries)} entries for user IDs: {list(set(e.user_id for e in all_entries))}"},
-                    "training_types": {},
-                    "rpe_distribution": {},
-                    "monthly_trend": []
-                }
-            else:
-                return {
-                    "total_sessions": 0,
-                    "this_month": 0,
-                    "avg_rpe": 0,
-                    "total_rounds": 0,
-                    "session_types": {"DEBUG": f"{current_user_info}. No entries found in database."},
-                    "training_types": {},
-                    "rpe_distribution": {},
-                    "monthly_trend": []
-                }
+            return {
+                "total_sessions": 0,
+                "this_month": 0,
+                "avg_rpe": 0,
+                "total_rounds": 0,
+                "session_types": {},
+                "training_types": {},
+                "rpe_distribution": {},
+                "monthly_trend": []
+            }
         
         # Basic stats
         total_sessions = len(entries)
