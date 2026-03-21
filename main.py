@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 from app.database import engine, SessionLocal
 from app.models import Base, Question
 from app.routers import auth, entries, questions, analytics, profile, goals, injuries, recommendations
@@ -30,6 +31,10 @@ app.include_router(profile.router)
 app.include_router(goals.router)
 app.include_router(injuries.router)
 app.include_router(recommendations.router)
+
+@app.get("/MatTiime.logo.png")
+def serve_logo():
+    return FileResponse("MatTiime.logo.png")
 
 @app.get("/")
 def serve_frontend():
