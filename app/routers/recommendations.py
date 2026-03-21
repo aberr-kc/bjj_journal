@@ -61,11 +61,6 @@ def extract_rpe_values(entries: List, responses: List) -> List[Dict]:
 def extract_technique_data(responses: List) -> Dict[str, Any]:
     """
     Parse Class Technique responses into position and skill type frequency maps.
-    Returns:
-        position_counts: {position: count}
-        skill_counts: {skill_type: count}
-        position_last_seen: {position: datetime}
-        position_skills: {position: {skill_type: count}}
     """
     position_counts: Dict[str, int] = {}
     skill_counts: Dict[str, int] = {}
@@ -88,12 +83,10 @@ def extract_technique_data(responses: List) -> Dict[str, Any]:
         position_counts[position] = position_counts.get(position, 0) + 1
         skill_counts[skill] = skill_counts.get(skill, 0) + 1
 
-        # Track last seen date per position
         entry_date = r.entry.date if hasattr(r, 'entry') and r.entry else datetime.min
         if position not in position_last_seen or entry_date > position_last_seen[position]:
             position_last_seen[position] = entry_date
 
-        # Track skills per position
         if position not in position_skills:
             position_skills[position] = {}
         position_skills[position][skill] = position_skills[position].get(skill, 0) + 1
@@ -117,17 +110,57 @@ def build_recommendation(type_: str, priority: str, title: str, message: str, ac
     }
 
 
-def recommend_positions(technique_data: Dict, active_injuries: List[str]) -> List[Dict]:
+# --- Phase 1: Data gates ---
+
+def check_data_gates(total_sessions: int, technique_data: Dict, rpe_data: List[Dict], entries: List) -> Dict[str, bool]:
+    """Check minimum data requirements before each category fires."""
+    unique_positions = len(technique_data["position_counts"])
+    has_submissions = technique_data["skill_counts"].get("Attacks/Submissions", 0) > 0
+
+    # Intensity gate: 5+ sessions in the last 14 days
+    two_weeks_ago = datetime.utcnow() - timedelta(days=14)
+    recent_sessions = len([e for e in entries if e.date >= two_weeks_ago])
+
+    return {
+        "position": total_sessions >= 10 and unique_positions >= 3,
+        "submission": total_sessions >= 10 and has_submissions,
+        "intensity": recent_sessions >= 5,
+    }
+
+
+# --- Phase 3: Adaptive stale window ---
+
+def get_stale_window_days(entries: List) -> int:
+    """Scale stale position window based on training frequency."""
+    sixty_days_ago = datetime.utcnow() - timedelta(days=60)
+    recent = [e for e in entries if e.date >= sixty_days_ago]
+    if not recent:
+        return 45
+    weeks = 60 / 7
+    sessions_per_week = len(recent) / weeks
+    if sessions_per_week >= 5:
+        return 21
+    elif sessions_per_week >= 3:
+        return 30
+    else:
+        return 45
+
+
+# --- Recommendation functions with tightened thresholds (Phase 2) ---
+
+def recommend_positions(technique_data: Dict, active_injuries: List[str], stale_days: int) -> List[Dict]:
     recs = []
     position_counts = technique_data["position_counts"]
     position_last_seen = technique_data["position_last_seen"]
     position_skills = technique_data["position_skills"]
     now = datetime.utcnow()
 
-    # Rule 1 - Stale position (medium)
+    # Rule 1 - Stale position (medium) — only positions trained 3+ times
     for position, last_seen in position_last_seen.items():
+        if position_counts.get(position, 0) < 3:
+            continue
         days_ago = (now - last_seen).days
-        if days_ago >= 30:
+        if days_ago >= stale_days:
             recs.append(build_recommendation(
                 type_="position",
                 priority="medium",
@@ -137,9 +170,9 @@ def recommend_positions(technique_data: Dict, active_injuries: List[str]) -> Lis
                 data={"position": position, "days_since_trained": days_ago}
             ))
 
-    # Rule 2 - Limited skill diversity (low)
+    # Rule 2 - Limited skill diversity (low) — 5+ sessions in position
     for position, skills in position_skills.items():
-        if position_counts.get(position, 0) >= 3 and len(skills) == 1:
+        if position_counts.get(position, 0) >= 5 and len(skills) == 1:
             only_skill = list(skills.keys())[0]
             recs.append(build_recommendation(
                 type_="position",
@@ -187,8 +220,8 @@ def recommend_submissions(technique_data: Dict, total_sessions: int) -> List[Dic
 
     attack_count = skill_counts.get("Attacks/Submissions", 0)
 
-    # Rule 1 - Low submission frequency (high)
-    if total_sessions >= 5 and attack_count / total_sessions < 0.2:
+    # Rule 1 - Low submission frequency (high) — 15+ sessions required
+    if total_sessions >= 15 and attack_count / total_sessions < 0.2:
         recs.append(build_recommendation(
             type_="submission",
             priority="high",
@@ -198,11 +231,11 @@ def recommend_submissions(technique_data: Dict, total_sessions: int) -> List[Dic
             data={"submission_sessions": attack_count, "total_sessions": total_sessions}
         ))
 
-    # Rule 2 - No submissions from position (medium)
+    # Rule 2 - No submissions from position (medium) — 6+ sessions required
     for position, skills in position_skills.items():
         count = sum(skills.values())
         has_attacks = "Attacks/Submissions" in skills
-        if count >= 4 and not has_attacks:
+        if count >= 6 and not has_attacks:
             recs.append(build_recommendation(
                 type_="submission",
                 priority="medium",
@@ -230,7 +263,7 @@ def recommend_intensity(rpe_data: List[Dict], total_sessions: int, active_injuri
     avg_month = sum(month_rpe) / len(month_rpe) if month_rpe else None
 
     if avg_recent is not None:
-        # Rule 1 - High training intensity (medium, or high if injured)
+        # Rule 1 - High training intensity
         if avg_recent > 7.5:
             priority = "high" if active_injuries else "medium"
             msg = f"Your average RPE over the past 7 days is {avg_recent:.1f}/9."
@@ -244,7 +277,7 @@ def recommend_intensity(rpe_data: List[Dict], total_sessions: int, active_injuri
                 action="Schedule a lower-intensity technical or drilling session.",
                 data={"avg_rpe_7d": round(avg_recent, 1), "active_injuries": active_injuries}
             ))
-        # Rule 2 - Low training intensity (low)
+        # Rule 2 - Low training intensity
         elif avg_recent < 4.0 and total_sessions >= 3:
             recs.append(build_recommendation(
                 type_="intensity",
@@ -255,7 +288,7 @@ def recommend_intensity(rpe_data: List[Dict], total_sessions: int, active_injuri
                 data={"avg_rpe_7d": round(avg_recent, 1)}
             ))
 
-    # Rule 3 - Increasing intensity trend (medium)
+    # Rule 3 - Increasing intensity trend
     if len(rpe_data) >= 3:
         last_three = [r["rpe"] for r in rpe_data[-3:]]
         if last_three[0] < last_three[1] < last_three[2] and last_three[2] >= 7:
@@ -268,7 +301,7 @@ def recommend_intensity(rpe_data: List[Dict], total_sessions: int, active_injuri
                 data={"rpe_trend": last_three}
             ))
 
-    # Rule 4 - High load while injured (high)
+    # Rule 4 - High load while injured
     if active_injuries and avg_month and avg_month > 6.5:
         recs.append(build_recommendation(
             type_="intensity",
@@ -282,6 +315,8 @@ def recommend_intensity(rpe_data: List[Dict], total_sessions: int, active_injuri
     return recs
 
 
+# --- Main endpoint ---
+
 @router.get("/")
 def get_recommendations(
     db: Session = Depends(get_db),
@@ -294,10 +329,17 @@ def get_recommendations(
 
     total_sessions = len(entries)
 
+    # Phase 1: Check data gates
+    gates = check_data_gates(total_sessions, technique_data, rpe_data, entries)
+    stale_days = get_stale_window_days(entries)
+
     all_recs = []
-    all_recs += recommend_positions(technique_data, active_injuries)
-    all_recs += recommend_submissions(technique_data, total_sessions)
-    all_recs += recommend_intensity(rpe_data, total_sessions, active_injuries)
+    if gates["position"]:
+        all_recs += recommend_positions(technique_data, active_injuries, stale_days)
+    if gates["submission"]:
+        all_recs += recommend_submissions(technique_data, total_sessions)
+    if gates["intensity"]:
+        all_recs += recommend_intensity(rpe_data, total_sessions, active_injuries)
 
     # Sort by priority: high → medium → low
     priority_order = {"high": 0, "medium": 1, "low": 2}
@@ -319,6 +361,8 @@ def get_recommendations(
             "active_injuries": active_injuries,
             "positions_tracked": len(technique_data["position_counts"]),
             "rpe_data_points": len(rpe_data),
-            "low_data": total_sessions < 5
+            "low_data": total_sessions < 5,
+            "data_gates": gates,
+            "stale_window_days": stale_days,
         }
     }
