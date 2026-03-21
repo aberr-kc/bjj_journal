@@ -7,8 +7,8 @@ import os
 DATABASE_URL = os.getenv("DATABASE_URL")
 
 if DATABASE_URL:
-    # Production (Railway PostgreSQL)
-    SQLALCHEMY_DATABASE_URL = DATABASE_URL
+    # Railway provides postgres:// but SQLAlchemy requires postgresql://
+    SQLALCHEMY_DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
     engine = create_engine(SQLALCHEMY_DATABASE_URL)
 else:
     # Local development (SQLite)
