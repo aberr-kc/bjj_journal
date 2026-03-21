@@ -7,9 +7,8 @@ from app.models import Base, Question
 from app.routers import auth, entries, questions, analytics, profile, goals, injuries, recommendations
 import os
 
-# Create database tables (only for local development)
-if not os.getenv("DATABASE_URL"):
-    Base.metadata.create_all(bind=engine)
+# Create database tables
+Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="BJJ Training Journal", version="1.0.1")
 
