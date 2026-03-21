@@ -5,12 +5,12 @@ import random
 
 # API configuration
 API_BASE = "http://localhost:8000"
-USERNAME = "abarr"
-PASSWORD = "password123"
+USERNAME = "test"
+PASSWORD = "test"
 
 # Sample data for realistic entries
 session_types = ["Gi", "No Gi", "Both"]
-training_types = ["Skill development", "Rest session", "Drilling", "High Intensity", "Competition Rounds", "Social"]
+training_types = ["Regular Class", "Open Mat", "Competition Training", "Drilling Session", "Private Lesson", "Seminar/Workshop", "Light Training", "Competition"]
 rpe_ratings = [3, 4, 5, 6, 7, 8, 9]
 # Enhanced technique data with position-skill combinations
 POSITIONS = ["Closed Guard", "Open Guard", "Half Guard", "Mount", "Side Control", "Back Control", "Butterfly Guard", "De La Riva Guard", "X-Guard", "Spider Guard"]
@@ -27,19 +27,29 @@ SUBMISSIONS = [
 
 techniques = [
     "Closed Guard - Armbar",
-    "Closed Guard - Triangle Choke", 
+    "Closed Guard - Triangle Choke",
+    "Closed Guard - Kimura",
+    "Closed Guard - Sweeps",
     "Mount - Cross Collar Choke",
-    "Back Control - Rear Naked Choke",
-    "Side Control - Kimura",
-    "Half Guard - Sweeps",
-    "Butterfly Guard - Sweeps",
-    "Open Guard - Triangle Choke",
-    "Spider Guard - Omoplata",
-    "De La Riva Guard - Heel Hook",
-    "X-Guard - Sweeps",
     "Mount - Americana",
-    "Side Control - D'Arce Choke",
+    "Mount - Escapes",
+    "Back Control - Rear Naked Choke",
     "Back Control - Bow and Arrow Choke",
+    "Side Control - Kimura",
+    "Side Control - D'Arce Choke",
+    "Side Control - Escapes",
+    "Half Guard - Sweeps",
+    "Half Guard - Kimura",
+    "Butterfly Guard - Sweeps",
+    "Butterfly Guard - Guillotine Choke",
+    "Open Guard - Triangle Choke",
+    "Open Guard - Sweeps",
+    "Spider Guard - Omoplata",
+    "Spider Guard - Triangle Choke",
+    "De La Riva Guard - Heel Hook",
+    "De La Riva Guard - Sweeps",
+    "X-Guard - Sweeps",
+    "X-Guard - Transitions",
     "Closed Guard - Omoplata"
 ]
 journal_notes = [
@@ -73,6 +83,9 @@ def register_user():
                            json={"username": USERNAME, "password": PASSWORD})
     if response.status_code == 200:
         print(f"User {USERNAME} registered successfully")
+        return True
+    elif response.status_code == 400:
+        print(f"User {USERNAME} already exists, continuing...")
         return True
     else:
         print(f"Registration failed: {response.status_code} - {response.text}")
@@ -139,12 +152,13 @@ def main():
     question_map = {q["question_text"]: q["id"] for q in questions}
     print(f"Available questions: {list(question_map.keys())}")
     
-    # Generate 10 entries over the last 3 weeks
-    base_date = datetime.now() - timedelta(days=21)
+    # Generate 50-60 entries over the last 3 months (4-5 per week)
+    base_date = datetime.now() - timedelta(days=90)
+    num_entries = random.randint(50, 60)
     
-    for i in range(10):
-        # Generate random date within the last 3 weeks
-        days_offset = random.randint(0, 20)
+    for i in range(num_entries):
+        # Generate random date within the last 3 months
+        days_offset = random.randint(0, 89)
         entry_date = base_date + timedelta(days=days_offset)
         date_str = entry_date.strftime("%Y-%m-%dT12:00:00")
         

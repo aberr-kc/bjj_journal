@@ -9,7 +9,7 @@ def test_api():
     
     # Test 1: Register user
     print("\n1. Testing user registration...")
-    register_data = {"username": "testuser", "password": "testpass123"}
+    register_data = {"username": "test", "password": "test"}
     response = requests.post(f"{BASE_URL}/auth/register", json=register_data)
     print(f"Register response: {response.status_code} - {response.json()}")
     
@@ -64,7 +64,7 @@ def test_api():
     entry = response.json()
     print(f"Entry details: {entry['session_type']} on {entry['date'][:10]}")
     
-    print("\n✅ All tests completed successfully!")
+    print("\nAll tests completed successfully!")
 
 if __name__ == "__main__":
     test_api()
