@@ -11,13 +11,17 @@ router = APIRouter(prefix="/recommendations", tags=["recommendations"])
 
 def get_entries_with_responses(db: Session, user_id: int, days: int = 90):
     """Fetch entries and their responses for a user within the last N days."""
-    since = datetime.now() - timedelta(days=days)
+    since = datetime.utcnow() - timedelta(days=days)
     entries = (
         db.query(Entry)
         .filter(Entry.user_id == user_id, Entry.date >= since)
         .order_by(Entry.date.desc())
         .all()
     )
+    # Normalize dates to naive for consistent comparisons
+    for entry in entries:
+        if entry.date and entry.date.tzinfo is not None:
+            entry.date = entry.date.replace(tzinfo=None)
     entry_ids = [e.id for e in entries]
     responses = (
         db.query(Response)
@@ -118,7 +122,7 @@ def recommend_positions(technique_data: Dict, active_injuries: List[str]) -> Lis
     position_counts = technique_data["position_counts"]
     position_last_seen = technique_data["position_last_seen"]
     position_skills = technique_data["position_skills"]
-    now = datetime.now()
+    now = datetime.utcnow()
 
     # Rule 1 - Stale position (medium)
     for position, last_seen in position_last_seen.items():
@@ -217,11 +221,11 @@ def recommend_intensity(rpe_data: List[Dict], total_sessions: int, active_injuri
     if not rpe_data:
         return recs
 
-    week_ago = datetime.now() - timedelta(days=7)
+    week_ago = datetime.utcnow() - timedelta(days=7)
     recent_rpe = [r["rpe"] for r in rpe_data if r["date"] >= week_ago]
     avg_recent = sum(recent_rpe) / len(recent_rpe) if recent_rpe else None
 
-    month_ago = datetime.now() - timedelta(days=30)
+    month_ago = datetime.utcnow() - timedelta(days=30)
     month_rpe = [r["rpe"] for r in rpe_data if r["date"] >= month_ago]
     avg_month = sum(month_rpe) / len(month_rpe) if month_rpe else None
 

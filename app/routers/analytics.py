@@ -39,6 +39,11 @@ def get_dashboard_stats(
             ).all()
         else:
             entries = db.query(Entry).filter(Entry.user_id == current_user.id).all()
+
+        # Normalize entry dates to naive (strip timezone) for consistent comparisons
+        for entry in entries:
+            if entry.date and entry.date.tzinfo is not None:
+                entry.date = entry.date.replace(tzinfo=None)
         
         print(f"DEBUG: Found {len(entries)} entries for user {current_user.username} (ID: {current_user.id})")
         for entry in entries:
