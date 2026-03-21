@@ -434,13 +434,14 @@
             div.className = 'form-group';
             let input = '';
             if (question.question_text === 'Session Type') {
-                input = `<select id="q${question.id}" class="form-control"><option value="">Select session type</option><option value="Gi">Gi</option><option value="No Gi">No Gi</option><option value="Both">Both</option></select>`;
+                input = `<select id="q${question.id}" class="form-control"><option value="">Select session type</option><option value="Gi">Gi</option><option value="No Gi">No Gi</option></select>`;
             } else if (question.question_text === 'Training') {
                 input = `<select id="q${question.id}" class="form-control" onchange="showTrainingDescription(this.value)"><option value="">Select training type</option><option value="Regular Class">Regular Class</option><option value="Open Mat">Open Mat</option><option value="Competition Training">Competition Training</option><option value="Drilling Session">Drilling Session</option><option value="Private Lesson">Private Lesson</option><option value="Seminar/Workshop">Seminar/Workshop</option><option value="Light Training">Light Training</option><option value="Competition">Competition</option></select><div id="trainingDescription" style="font-size:12px;color:#8a9ba8;margin-top:5px;font-style:italic;"></div>`;
             } else if (question.question_type === 'rating') {
-                input = `<select id="q${question.id}" class="form-control" onchange="showRPEDescription(this.value)"><option value="">Select rating</option>`;
-                for (let i = 1; i <= 9; i++) input += `<option value="${i}">${i}</option>`;
-                input += `</select><div id="rpeDescription" style="font-size:12px;color:#8a9ba8;margin-top:5px;font-style:italic;"></div>`;
+                const rpeLabels = {1:'Light stretching or warm-up',2:'Easy drilling, no resistance',3:'Moderate drilling with some resistance',4:'Light rolling, controlled pace',5:'Normal rolling intensity',6:'Hard rolling, competitive pace',7:'Very intense rolling, pushing limits',8:'Competition-level intensity',9:'All-out effort, championship finals'};
+                input = `<select id="q${question.id}" class="form-control"><option value="">Select RPE</option>`;
+                for (let i = 1; i <= 9; i++) input += `<option value="${i}">${i} - ${rpeLabels[i]}</option>`;
+                input += `</select>`;
             } else if (question.question_text === 'Rounds Rolled') {
                 input = `<input type="number" id="q${question.id}" class="form-control" min="0" max="20" placeholder="Number of rounds">`;
             } else if (question.question_text === 'Summarise this session with a few words') {
@@ -448,7 +449,7 @@
             } else if (question.question_text === 'Journal Notes') {
                 input = `<textarea id="q${question.id}" class="form-control" rows="4" placeholder="Enter each note on a new line"></textarea>`;
             } else if (question.question_text === 'Class Technique') {
-                input = `<div style="position:relative;"><input type="text" id="q${question.id}_position" class="form-control" placeholder="Search position/area" oninput="filterPositions(this.value,${question.id})" onfocus="showPositionDropdown(${question.id})" onblur="hidePositionDropdown(${question.id})" style="margin-bottom:10px;"><div id="positionDropdown${question.id}" class="technique-dropdown hidden"></div><select id="q${question.id}_skill" class="form-control" disabled onchange="updateTechniqueValue(${question.id})"><option value="">Select skill type</option></select><select id="q${question.id}_submission" class="form-control hidden" onchange="updateTechniqueValue(${question.id})"><option value="">Select submission</option></select><input type="hidden" id="q${question.id}" class="form-control"><input type="text" id="q${question.id}_other" class="form-control hidden" placeholder="Enter custom position/technique" style="margin-top:10px;"></div>`;
+                input = `<div style="position:relative;"><input type="text" id="q${question.id}_position" class="form-control" placeholder="Search position/area" oninput="filterPositions(this.value,${question.id})" onfocus="showPositionDropdown(${question.id})" onblur="hidePositionDropdown(${question.id})" style="margin-bottom:10px;"><div id="positionDropdown${question.id}" class="technique-dropdown hidden"></div><select id="q${question.id}_skill" class="form-control" disabled onchange="updateTechniqueValue(${question.id})"><option value="">Select skill type</option></select><div style="position:relative;"><input type="text" id="q${question.id}_submission" class="form-control hidden" placeholder="Search submission..." oninput="filterSubmissions(this.value,${question.id})" onfocus="showSubmissionDropdown(${question.id})" onblur="hideSubmissionDropdown(${question.id})" style="margin-top:10px;"><div id="submissionDropdown${question.id}" class="technique-dropdown hidden"></div></div><input type="hidden" id="q${question.id}" class="form-control"><input type="text" id="q${question.id}_other" class="form-control hidden" placeholder="Enter custom position/technique" style="margin-top:10px;"></div>`;
             } else {
                 input = `<textarea id="q${question.id}" class="form-control" rows="3"></textarea>`;
             }
@@ -478,9 +479,9 @@
         'Side Control','Kesa Gatame','Reverse Kesa Gatame','North–South','Knee on Belly','Back Control','Back Mount',
         'Body Triangle','Twister Control','Headquarters Position','Leg Drag Position','Smash Pass Position',
         'Over-Under Position','Float Passing Position','Chest-to-Chest Half Guard','Split Squat Passing Base','Other'
-    ];
+    ].sort((a, b) => { if (a === 'Other') return 1; if (b === 'Other') return -1; return a.localeCompare(b); });
     const skillsByPosition = { 'Other': ['Custom Entry'] };
-    const defaultSkills = ['Attacks/Submissions','Sweeps','Escapes','Defense','Setups','Transitions','Guard Passing'];
+    const defaultSkills = ['Attacks/Submissions','Defense','Escapes','Guard Passing','Setups','Sweeps','Transitions'];
     const submissionTypes = [
         'Armbar','Straight Armbar','Juji Gatame','Arm Crush','Americana','Keylock','Kimura','Reverse Kimura',
         'Kimura Trap Finish','Monoplata','Omoplata','Reverse Omoplata','Tarikoplata','Mir Lock','Shoulder Lock',
@@ -494,7 +495,7 @@
         'Punch Choke','Neck Crank','Can Opener','Twister','Cervical Crank','Spine Crank','Straight Ankle Lock',
         'Ankle Lock','Achilles Lock','Heel Hook','Inside Heel Hook','Outside Heel Hook','Toe Hold','Kneebar',
         'Calf Slicer','Calf Crusher','Bicep Slicer','Arm Slicer','Wrist Lock'
-    ];
+    ].sort();
 
     function showPositionDropdown(qId) {
         const dd = document.getElementById(`positionDropdown${qId}`);
@@ -521,7 +522,7 @@
         const position = posInput.value;
         skillSel.innerHTML = '<option value="">Select skill type</option>';
         subSel.classList.add('hidden');
-        subSel.innerHTML = '<option value="">Select submission</option>';
+        subSel.value = '';
         if (position === 'Other') { skillSel.disabled = true; otherInput.classList.remove('hidden'); otherInput.focus(); }
         else { otherInput.classList.add('hidden'); otherInput.value = '';
             if (position) { skillSel.disabled = false; (skillsByPosition[position] || defaultSkills).forEach(s => { const o = document.createElement('option'); o.value = s; o.textContent = s; skillSel.appendChild(o); }); }
@@ -532,19 +533,27 @@
     function updateTechniqueValue(qId) {
         const pos = document.getElementById(`q${qId}_position`).value;
         const skill = document.getElementById(`q${qId}_skill`).value;
-        const subSel = document.getElementById(`q${qId}_submission`);
+        const subInput = document.getElementById(`q${qId}_submission`);
         const hidden = document.getElementById(`q${qId}`);
         const other = document.getElementById(`q${qId}_other`).value;
         if (skill === 'Attacks/Submissions') {
-            subSel.classList.remove('hidden');
-            if (subSel.options.length <= 1) submissionTypes.forEach(s => { const o = document.createElement('option'); o.value = s; o.textContent = s; subSel.appendChild(o); });
-        } else { subSel.classList.add('hidden'); subSel.innerHTML = '<option value="">Select submission</option>'; }
-        const sub = subSel.value;
+            subInput.classList.remove('hidden');
+        } else { subInput.classList.add('hidden'); subInput.value = ''; const dd = document.getElementById(`submissionDropdown${qId}`); if (dd) dd.classList.add('hidden'); }
+        const sub = subInput.value;
         if (pos === 'Other' && other) hidden.value = other;
         else if (pos && skill === 'Attacks/Submissions' && sub) hidden.value = `${pos} - ${sub}`;
         else if (pos && skill) hidden.value = `${pos} - ${skill}`;
         else hidden.value = '';
     }
+    function showSubmissionDropdown(qId) { const dd = document.getElementById(`submissionDropdown${qId}`); if (dd) { populateSubmissionDropdown(qId, submissionTypes); dd.classList.remove('hidden'); } }
+    function hideSubmissionDropdown(qId) { setTimeout(() => { const dd = document.getElementById(`submissionDropdown${qId}`); if (dd) dd.classList.add('hidden'); }, 200); }
+    function filterSubmissions(value, qId) { populateSubmissionDropdown(qId, submissionTypes.filter(s => s.toLowerCase().includes(value.toLowerCase()))); }
+    function populateSubmissionDropdown(qId, list) {
+        const dd = document.getElementById(`submissionDropdown${qId}`); if (!dd) return;
+        dd.innerHTML = '';
+        list.forEach(sub => { const o = document.createElement('div'); o.className = 'technique-option'; o.textContent = sub; o.onclick = () => selectSubmission(qId, sub); dd.appendChild(o); });
+    }
+    function selectSubmission(qId, submission) { document.getElementById(`q${qId}_submission`).value = submission; document.getElementById(`submissionDropdown${qId}`).classList.add('hidden'); updateTechniqueValue(qId); }
     function showRPEDescription(val) {
         const d = { '1':'Light stretching or warm-up','2':'Easy drilling, no resistance','3':'Moderate drilling with some resistance','4':'Light rolling, controlled pace','5':'Normal rolling intensity','6':'Hard rolling, competitive pace','7':'Very intense rolling, pushing limits','8':'Competition-level intensity','9':'All-out effort, championship finals' };
         const el = document.getElementById('rpeDescription'); if (el) el.textContent = d[val] || '';
@@ -647,18 +656,33 @@
         renderAdvancedCharts();
     }
 
+    function getPositionColor(name) {
+        const parts = name.split(' - ');
+        if (parts.length > 1) {
+            const skill = parts[1].toLowerCase();
+            if (skill === 'attacks/submissions' || skill.includes('submission')) return '#e67e22';
+            if (skill === 'sweeps' || skill === 'sweep') return '#3498db';
+            if (skill === 'escapes' || skill === 'escape') return '#f39c12';
+            if (skill === 'defense' || skill === 'defence') return '#9b59b6';
+            if (skill === 'setups' || skill === 'setup' || skill === 'transitions' || skill === 'transition') return '#1abc9c';
+            if (skill === 'guard passing' || skill === 'guard pass') return '#2ecc71';
+        }
+        return '#34495e';
+    }
+
     function renderPieChart(title, data, type) {
-        const colors = ['#e67e22','#3498db','#f39c12','#9b59b6','#1abc9c','#34495e','#e74c3c','#95a5a6'];
+        const defaultColors = ['#e67e22','#3498db','#f39c12','#9b59b6','#1abc9c','#34495e','#e74c3c','#95a5a6'];
         const chartId = `pie_${type}_${Date.now()}`;
         const total = data.reduce((sum,[,count]) => sum + count, 0);
         let angle = -90, cx = 100, cy = 100, r = 80, paths = '', legend = '';
         data.forEach(([name, count], i) => {
+            const color = type === 'positions' ? getPositionColor(name) : defaultColors[i % defaultColors.length];
             const pct = (count / total) * 100, slice = (count / total) * 360, end = angle + slice;
             const x1 = cx + r * Math.cos(angle * Math.PI / 180), y1 = cy + r * Math.sin(angle * Math.PI / 180);
             const x2 = cx + r * Math.cos(end * Math.PI / 180), y2 = cy + r * Math.sin(end * Math.PI / 180);
             const large = slice > 180 ? 1 : 0;
-            paths += `<path d="M ${cx} ${cy} L ${x1} ${y1} A ${r} ${r} 0 ${large} 1 ${x2} ${y2} Z" fill="${colors[i % colors.length]}" stroke="#1a1f26" stroke-width="2" style="cursor:pointer;" onclick="showPieSliceInfo('${name.replace(/'/g,"\\'")}',${count},${pct.toFixed(1)})" />`;
-            legend += `<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;"><div style="width:12px;height:12px;background:${colors[i % colors.length]};border-radius:2px;flex-shrink:0;"></div><div style="font-size:12px;color:#f1f5f9;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${name}</div><div style="font-size:12px;color:#8a9ba8;font-weight:600;">${count} (${pct.toFixed(1)}%)</div></div>`;
+            paths += `<path d="M ${cx} ${cy} L ${x1} ${y1} A ${r} ${r} 0 ${large} 1 ${x2} ${y2} Z" fill="${color}" stroke="#1a1f26" stroke-width="2" style="cursor:pointer;" onclick="showPieSliceInfo('${name.replace(/'/g,"\\'")}',${count},${pct.toFixed(1)})" />`;
+            legend += `<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;"><div style="width:12px;height:12px;background:${color};border-radius:2px;flex-shrink:0;"></div><div style="font-size:12px;color:#f1f5f9;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${name}</div><div style="font-size:12px;color:#8a9ba8;font-weight:600;">${count} (${pct.toFixed(1)}%)</div></div>`;
             angle = end;
         });
         return `<div class="card" style="margin-bottom:12px;"><div class="card-header"><h4 class="card-title">${title}</h4></div><div style="padding:12px;"><div id="${chartId}_info" style="text-align:center;min-height:40px;margin-bottom:10px;padding:10px;background:#252b34;border-radius:6px;display:none;"><div style="font-size:14px;color:#00d4aa;font-weight:600;" id="${chartId}_name"></div><div style="font-size:12px;color:#8a9ba8;margin-top:4px;" id="${chartId}_details"></div></div><svg viewBox="0 0 200 200" style="width:100%;max-width:220px;margin:0 auto;display:block;">${paths}</svg><div style="margin-top:15px;">${legend}</div></div></div>`;

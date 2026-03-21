@@ -1219,7 +1219,6 @@
                         <option value="">Select session type</option>
                         <option value="Gi">Gi</option>
                         <option value="No Gi">No Gi</option>
-                        <option value="Both">Both</option>
                     </select>`;
                 } else if (question.question_text === 'Training') {
                     input = `<select id="q${question.id}" class="form-control" onchange="showTrainingDescription(this.value)">
@@ -1235,19 +1234,18 @@
                     </select>
                     <div id="trainingDescription" style="font-size: 12px; color: #94a3b8; margin-top: 5px; font-style: italic;"></div>`;
                 } else if (question.question_type === 'rating') {
-                    input = `<select id="q${question.id}" class="form-control" onchange="showRPEDescription(this.value)">
-                        <option value="">Select rating</option>
-                        <option value="1">1</option>
-                        <option value="2">2</option>
-                        <option value="3">3</option>
-                        <option value="4">4</option>
-                        <option value="5">5</option>
-                        <option value="6">6</option>
-                        <option value="7">7</option>
-                        <option value="8">8</option>
-                        <option value="9">9</option>
-                    </select>
-                    <div id="rpeDescription" style="font-size: 12px; color: #94a3b8; margin-top: 5px; font-style: italic;"></div>`;
+                    input = `<select id="q${question.id}" class="form-control">
+                        <option value="">Select RPE</option>
+                        <option value="1">1 - Light stretching or warm-up</option>
+                        <option value="2">2 - Easy drilling, no resistance</option>
+                        <option value="3">3 - Moderate drilling with some resistance</option>
+                        <option value="4">4 - Light rolling, controlled pace</option>
+                        <option value="5">5 - Normal rolling intensity</option>
+                        <option value="6">6 - Hard rolling, competitive pace</option>
+                        <option value="7">7 - Very intense rolling, pushing limits</option>
+                        <option value="8">8 - Competition-level intensity</option>
+                        <option value="9">9 - All-out effort, championship finals</option>
+                    </select>`;
                 } else if (question.question_text === 'Rounds Rolled') {
                     input = `<input type="number" id="q${question.id}" class="form-control" min="0" max="20" placeholder="Number of rounds">`;
                 } else if (question.question_text === 'Summarise this session with a few words') {
@@ -1264,9 +1262,10 @@
                             <select id="q${question.id}_skill" class="form-control" disabled onchange="updateTechniqueValue(${question.id})">
                                 <option value="">Select skill type</option>
                             </select>
-                            <select id="q${question.id}_submission" class="form-control hidden" onchange="updateTechniqueValue(${question.id})">
-                                <option value="">Select submission</option>
-                            </select>
+                            <div style="position: relative;">
+                                <input type="text" id="q${question.id}_submission" class="form-control hidden" placeholder="Search submission..." oninput="filterSubmissions(this.value, ${question.id})" onfocus="showSubmissionDropdown(${question.id})" onblur="hideSubmissionDropdown(${question.id})" style="margin-top: 10px;">
+                                <div id="submissionDropdown${question.id}" class="technique-dropdown hidden"></div>
+                            </div>
                             <input type="hidden" id="q${question.id}" class="form-control">
                             <input type="text" id="q${question.id}_other" class="form-control hidden" placeholder="Enter custom position/technique" style="margin-top: 10px;">
                         </div>`;
@@ -1609,6 +1608,8 @@
                             barColor = '#9b59b6'; // Purple
                         } else if (skillType === 'setups' || skillType === 'setup' || skillType === 'transitions' || skillType === 'transition') {
                             barColor = '#1abc9c'; // Teal
+                        } else if (skillType === 'guard passing' || skillType === 'guard pass') {
+                            barColor = '#2ecc71'; // Green
                         }
                     }
                 } else if (type === 'submissions') {
@@ -1659,6 +1660,10 @@
                         <div style="display: flex; align-items: center; gap: 8px;">
                             <div style="width: 14px; height: 14px; background: #1abc9c; border-radius: 3px;"></div>
                             <span>Setups/Transitions</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <div style="width: 14px; height: 14px; background: #2ecc71; border-radius: 3px;"></div>
+                            <span>Guard Passing</span>
                         </div>
                         <div style="display: flex; align-items: center; gap: 8px;">
                             <div style="width: 14px; height: 14px; background: #34495e; border-radius: 3px;"></div>
@@ -1857,13 +1862,17 @@
             'Twister Control', 'Headquarters Position', 'Leg Drag Position', 'Smash Pass Position',
             'Over-Under Position', 'Float Passing Position', 'Chest-to-Chest Half Guard',
             'Split Squat Passing Base', 'Other'
-        ];
+        ].sort((a, b) => {
+            if (a === 'Other') return 1;
+            if (b === 'Other') return -1;
+            return a.localeCompare(b);
+        });
         
         const skillsByPosition = {
             'Other': ['Custom Entry']
         };
         
-        const defaultSkills = ['Attacks/Submissions', 'Sweeps', 'Escapes', 'Defense', 'Setups', 'Transitions', 'Guard Passing'];
+        const defaultSkills = ['Attacks/Submissions', 'Defense', 'Escapes', 'Guard Passing', 'Setups', 'Sweeps', 'Transitions'];
         
         const submissionTypes = [
             'Armbar', 'Straight Armbar', 'Juji Gatame', 'Arm Crush', 'Americana', 'Keylock', 'Kimura',
@@ -1881,7 +1890,7 @@
             'Straight Ankle Lock', 'Ankle Lock', 'Achilles Lock', 'Heel Hook', 'Inside Heel Hook',
             'Outside Heel Hook', 'Toe Hold', 'Kneebar', 'Calf Slicer', 'Calf Crusher', 'Bicep Slicer',
             'Arm Slicer', 'Wrist Lock'
-        ];
+        ].sort();
         
         function showPositionDropdown(questionId) {
             const dropdown = document.getElementById(`positionDropdown${questionId}`);
@@ -1942,7 +1951,7 @@
             // Clear skill dropdown
             skillSelect.innerHTML = '<option value="">Select skill type</option>';
             submissionSelect.classList.add('hidden');
-            submissionSelect.innerHTML = '<option value="">Select submission</option>';
+            submissionSelect.value = '';
             
             if (position === 'Other') {
                 skillSelect.disabled = true;
@@ -1973,27 +1982,23 @@
         function updateTechniqueValue(questionId) {
             const positionInput = document.getElementById(`q${questionId}_position`);
             const skillSelect = document.getElementById(`q${questionId}_skill`);
-            const submissionSelect = document.getElementById(`q${questionId}_submission`);
+            const submissionInput = document.getElementById(`q${questionId}_submission`);
             const hiddenInput = document.getElementById(`q${questionId}`);
             const otherInput = document.getElementById(`q${questionId}_other`);
             
             const position = positionInput.value;
             const skill = skillSelect.value;
-            const submission = submissionSelect.value;
+            const submission = submissionInput.value;
             const otherValue = otherInput.value;
             
-            // Show submission dropdown if Attacks/Submissions is selected
+            // Show submission search if Attacks/Submissions is selected
             if (skill === 'Attacks/Submissions') {
-                submissionSelect.classList.remove('hidden');
-                submissionTypes.forEach(sub => {
-                    const option = document.createElement('option');
-                    option.value = sub;
-                    option.textContent = sub;
-                    submissionSelect.appendChild(option);
-                });
+                submissionInput.classList.remove('hidden');
             } else {
-                submissionSelect.classList.add('hidden');
-                submissionSelect.innerHTML = '<option value="">Select submission</option>';
+                submissionInput.classList.add('hidden');
+                submissionInput.value = '';
+                const dd = document.getElementById(`submissionDropdown${questionId}`);
+                if (dd) dd.classList.add('hidden');
             }
             
             if (position === 'Other' && otherValue) {
@@ -2005,6 +2010,36 @@
             } else {
                 hiddenInput.value = '';
             }
+        }
+        
+        function showSubmissionDropdown(questionId) {
+            const dd = document.getElementById(`submissionDropdown${questionId}`);
+            if (dd) { populateSubmissionDropdown(questionId, submissionTypes); dd.classList.remove('hidden'); }
+        }
+        function hideSubmissionDropdown(questionId) {
+            setTimeout(() => { const dd = document.getElementById(`submissionDropdown${questionId}`); if (dd) dd.classList.add('hidden'); }, 200);
+        }
+        function filterSubmissions(value, questionId) {
+            const filtered = submissionTypes.filter(s => s.toLowerCase().includes(value.toLowerCase()));
+            populateSubmissionDropdown(questionId, filtered);
+        }
+        function populateSubmissionDropdown(questionId, list) {
+            const dd = document.getElementById(`submissionDropdown${questionId}`);
+            if (!dd) return;
+            dd.innerHTML = '';
+            list.forEach(sub => {
+                const o = document.createElement('div');
+                o.className = 'technique-option';
+                o.textContent = sub;
+                o.onclick = () => selectSubmission(questionId, sub);
+                dd.appendChild(o);
+            });
+        }
+        function selectSubmission(questionId, submission) {
+            const input = document.getElementById(`q${questionId}_submission`);
+            input.value = submission;
+            document.getElementById(`submissionDropdown${questionId}`).classList.add('hidden');
+            updateTechniqueValue(questionId);
         }
         
         function showRPEDescription(value) {
