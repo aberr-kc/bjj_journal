@@ -3,440 +3,258 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BJJ Training Journal</title>
+    <title>MatTime</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            background: #0f1419; 
-            color: #ffffff; 
-            line-height: 1.6;
-        }
-        .container { max-width: 100%; margin: 0 auto; padding: 15px; }
-        .header {
-            background: #1a1f26;
-            padding: 15px 0;
-            border-bottom: 1px solid #2a3038;
-            margin-bottom: 20px;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-        .header-content {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0 15px;
-        }
-        .logo { font-size: 20px; font-weight: bold; color: #00d4aa; }
-        .user-menu { display: flex; gap: 8px; align-items: center; }
-        .btn {
-            background: #00d4aa;
-            color: #0f1419;
-            border: none;
-            padding: 10px 16px;
-            border-radius: 20px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 13px;
-            transition: all 0.3s ease;
-            white-space: nowrap;
-        }
-        .btn:hover, .btn:active { background: #00b894; transform: translateY(-1px); }
-        .btn-secondary {
-            background: #2a3038;
-            color: #ffffff;
-            padding: 8px 12px;
-            font-size: 12px;
-        }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0f1419; color: #ffffff; line-height: 1.6; }
+        .container { max-width: 100%; margin: 0 auto; padding: 12px; }
+        .header { background: #1a1f26; padding: 12px 0; border-bottom: 1px solid #2a3038; margin-bottom: 15px; position: sticky; top: 0; z-index: 100; }
+        .header-content { display: flex; justify-content: space-between; align-items: center; padding: 0 12px; }
+        .logo { display: flex; align-items: center; cursor: pointer; flex-shrink: 0; }
+        .hamburger { width: 28px; height: 22px; display: flex; flex-direction: column; justify-content: space-between; cursor: pointer; }
+        .hamburger span { width: 100%; height: 3px; background: #00d4aa; border-radius: 2px; }
+        .nav-menu { position: fixed; top: 0; right: -280px; width: 260px; height: 100vh; background: #1a1f26; border-left: 1px solid #2a3038; padding: 70px 15px 15px; transition: right 0.3s ease; z-index: 1000; overflow-y: auto; }
+        .nav-menu.open { right: 0; }
+        .nav-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; z-index: 999; }
+        .nav-overlay.show { display: block; }
+        .nav-menu .btn { width: 100%; margin-bottom: 10px; text-align: left; }
+        .nav-close { position: absolute; top: 15px; right: 15px; font-size: 28px; color: #8a9ba8; cursor: pointer; }
+        .btn { background: #00d4aa; color: #0f1419; border: none; padding: 10px 16px; border-radius: 20px; cursor: pointer; font-weight: 600; font-size: 13px; transition: all 0.2s ease; white-space: nowrap; }
+        .btn:hover, .btn:active { background: #00b894; }
+        .btn-secondary { background: #2a3038; color: #ffffff; }
         .btn-secondary:hover, .btn-secondary:active { background: #3a4048; }
-        .card {
-            background: #1a1f26;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 15px;
-            border: 1px solid #2a3038;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-        }
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid #2a3038;
-        }
-        .card-title { font-size: 16px; font-weight: 600; color: #ffffff; }
-        .activity-card {
-            background: linear-gradient(135deg, #1a1f26 0%, #252b34 100%);
-            border-left: 4px solid #00d4aa;
-            transition: transform 0.2s ease;
-        }
-        .activity-card:hover { transform: translateY(-2px); }
-        .activity-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-        .activity-date {
-            font-size: 14px;
-            color: #8a9ba8;
-            font-weight: 500;
-        }
-        .activity-type {
-            background: #00d4aa;
-            color: #0f1419;
-            padding: 4px 12px;
-            border-radius: 15px;
-            font-size: 12px;
-            font-weight: 600;
-        }
-        .stat-item {
-            background: #252b34;
-            padding: 12px;
-            border-radius: 8px;
-            text-align: center;
-            margin-bottom: 10px;
-        }
-        .stat-label {
-            font-size: 12px;
-            color: #8a9ba8;
-            margin-bottom: 4px;
-        }
-        .stat-value {
-            font-size: 16px;
-            font-weight: 600;
-            color: #ffffff;
-        }
-        .form-group {
-            margin-bottom: 15px;
-        }
-        .form-group label {
-            display: block;
-            margin-bottom: 6px;
-            font-weight: 500;
-            color: #8a9ba8;
-            font-size: 14px;
-        }
-        .form-control {
-            width: 100%;
-            padding: 12px 16px;
-            background: #252b34;
-            border: 1px solid #3a4048;
-            border-radius: 8px;
-            color: #ffffff;
-            font-size: 16px;
-        }
-        .form-control:focus {
-            outline: none;
-            border-color: #00d4aa;
-            box-shadow: 0 0 0 2px rgba(0, 212, 170, 0.2);
-        }
-        .login-container {
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: linear-gradient(135deg, #0f1419 0%, #1a1f26 100%);
-            padding: 20px;
-        }
-        .login-card {
-            background: #1a1f26;
-            padding: 30px;
-            border-radius: 16px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-            width: 100%;
-            max-width: 400px;
-        }
-        .login-title {
-            text-align: center;
-            margin-bottom: 25px;
-            font-size: 24px;
-            font-weight: 700;
-            color: #00d4aa;
-        }
-        .edit-btn {
-            background: none;
-            border: 1px solid #00d4aa;
-            color: #00d4aa;
-            padding: 6px 12px;
-            border-radius: 15px;
-            font-size: 12px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-        .edit-btn:hover, .edit-btn:active {
-            background: #00d4aa;
-            color: #0f1419;
-        }
+        .card { background: #1a1f26; border-radius: 12px; padding: 16px; margin-bottom: 12px; border: 1px solid #2a3038; }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid #2a3038; }
+        .card-title { font-size: 15px; font-weight: 600; color: #ffffff; }
+        .activity-card { background: linear-gradient(135deg, #1a1f26 0%, #252b34 100%); border-left: 4px solid #00d4aa; }
+        .stat-item { background: #252b34; padding: 12px; border-radius: 8px; text-align: center; border-top: 3px solid #00d4aa; }
+        .stat-label { font-size: 11px; color: #8a9ba8; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
+        .stat-value { font-size: 18px; font-weight: 700; color: #ffffff; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 6px; font-weight: 500; color: #8a9ba8; font-size: 14px; }
+        .form-control { width: 100%; padding: 12px 14px; background: #252b34; border: 1px solid #3a4048; border-radius: 8px; color: #ffffff; font-size: 16px; }
+        .form-control:focus { outline: none; border-color: #00d4aa; box-shadow: 0 0 0 2px rgba(0,212,170,0.2); }
+        .login-container { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #0f1419 0%, #1a1f26 100%); padding: 20px; }
+        .login-card { background: #1a1f26; padding: 30px; border-radius: 16px; box-shadow: 0 8px 32px rgba(0,0,0,0.4); width: 100%; max-width: 400px; }
+        .login-title { text-align: center; margin-bottom: 25px; font-size: 24px; font-weight: 700; color: #00d4aa; }
+        .edit-btn { background: none; border: 1px solid #00d4aa; color: #00d4aa; padding: 5px 10px; border-radius: 15px; font-size: 11px; cursor: pointer; }
+        .edit-btn:hover, .edit-btn:active { background: #00d4aa; color: #0f1419; }
         .hidden { display: none; }
-        .message {
-            padding: 12px 16px;
-            border-radius: 8px;
-            margin: 15px 0;
-            font-weight: 500;
-        }
-        .success {
-            background: rgba(0, 212, 170, 0.1);
-            color: #00d4aa;
-            border: 1px solid #00d4aa;
-        }
-        .error {
-            background: rgba(255, 107, 107, 0.1);
-            color: #ff6b6b;
-            border: 1px solid #ff6b6b;
-        }
-        .nav-buttons {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-        .dashboard-stats {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-        .response-item {
-            margin-bottom: 15px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid #2a3038;
-        }
-        .response-item:last-child {
-            border-bottom: none;
-            margin-bottom: 0;
-            padding-bottom: 0;
-        }
-        .response-question {
-            font-size: 12px;
-            color: #8a9ba8;
-            margin-bottom: 5px;
-        }
-        .response-answer {
-            color: #ffffff;
-            font-weight: 500;
-        }
-        .technique-dropdown {
-            position: absolute;
-            top: 100%;
-            left: 0;
-            right: 0;
-            background: #252b34;
-            border: 1px solid #3a4048;
-            border-radius: 8px;
-            max-height: 200px;
-            overflow-y: auto;
-            z-index: 1000;
-        }
-        .technique-option {
-            padding: 10px 16px;
-            cursor: pointer;
-            border-bottom: 1px solid #3a4048;
-            color: #ffffff;
-            font-size: 14px;
-        }
-        .technique-option:hover, .technique-option:active {
-            background: #3a4048;
-        }
-        .technique-option:last-child {
-            border-bottom: none;
-        }
-        @media (max-width: 480px) {
-            .user-menu { gap: 5px; }
-            .btn { padding: 8px 12px; font-size: 12px; }
-            .btn-secondary { padding: 6px 10px; font-size: 11px; }
-            .logo { font-size: 18px; }
-        }
+        .message { padding: 10px 14px; border-radius: 8px; margin: 10px 0; font-weight: 500; font-size: 13px; }
+        .success { background: rgba(0,212,170,0.1); color: #00d4aa; border: 1px solid #00d4aa; }
+        .error { background: rgba(255,107,107,0.1); color: #ff6b6b; border: 1px solid #ff6b6b; }
+        .technique-dropdown { position: absolute; top: 100%; left: 0; right: 0; background: #252b34; border: 1px solid #3a4048; border-radius: 8px; max-height: 200px; overflow-y: auto; z-index: 1000; }
+        .technique-option { padding: 10px 14px; cursor: pointer; border-bottom: 1px solid #3a4048; color: #ffffff; font-size: 14px; }
+        .technique-option:hover, .technique-option:active { background: #3a4048; }
+        .technique-option:last-child { border-bottom: none; }
+        .rpe-badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 20px; font-size: 12px; font-weight: 700; }
+        .rpe-low { background: rgba(34,197,94,0.15); color: #86efac; border: 1px solid rgba(34,197,94,0.3); }
+        .rpe-medium { background: rgba(234,179,8,0.15); color: #fde047; border: 1px solid rgba(234,179,8,0.3); }
+        .rpe-high { background: rgba(239,68,68,0.15); color: #fca5a5; border: 1px solid rgba(239,68,68,0.3); }
+        /* Recommendations */
+        .rec-card { background: linear-gradient(135deg, #1a0a0a 0%, #3a1515 100%); border: 1px solid #5a1a1a; border-radius: 12px; padding: 16px; margin-bottom: 12px; }
+        .rec-card-title { font-size: 15px; font-weight: 700; color: #fca5a5; margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid rgba(90,26,26,0.6); display: flex; align-items: center; gap: 8px; }
+        .rec-items-row { display: flex; gap: 10px; flex-direction: column; }
+        .rec-item { border-radius: 8px; padding: 12px; display: flex; flex-direction: column; gap: 6px; }
+        .rec-item-high { background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.4); border-top: 3px solid #ef4444; }
+        .rec-item-medium { background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.35); border-top: 3px solid #f59e0b; }
+        .rec-item-low { background: rgba(100,116,139,0.15); border: 1px solid rgba(100,116,139,0.3); border-top: 3px solid #64748b; }
+        .rec-item-header { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+        .rec-category-tag { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.8px; }
+        .rec-category-position { background: rgba(99,102,241,0.2); color: #a5b4fc; }
+        .rec-category-submission { background: rgba(239,68,68,0.2); color: #fca5a5; }
+        .rec-category-intensity { background: rgba(245,158,11,0.2); color: #fcd34d; }
+        .rec-category-goal { background: rgba(34,197,94,0.2); color: #86efac; }
+        .rec-title { font-size: 13px; font-weight: 700; color: #f1f5f9; }
+        .rec-message { font-size: 12px; color: #cbd5e1; line-height: 1.5; }
+        .rec-message strong { color: #f1f5f9; }
+        .rec-message .rec-accent { color: #fbbf24; font-weight: 600; }
+        .rec-empty { color: #8a9ba8; font-size: 13px; text-align: center; padding: 10px 0; }
+        .rec-onboarding { background: rgba(99,102,241,0.1); border: 1px dashed rgba(99,102,241,0.4); border-radius: 8px; padding: 12px; text-align: center; color: #a5b4fc; font-size: 12px; }
+        /* Toast */
+        #toastContainer { position: fixed; bottom: 20px; right: 12px; left: 12px; z-index: 9999; display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
+        .toast { display: flex; align-items: center; gap: 8px; padding: 12px 16px; border-radius: 10px; font-size: 13px; font-weight: 500; box-shadow: 0 8px 24px rgba(0,0,0,0.4); animation: toastIn 0.3s ease forwards; pointer-events: all; }
+        .toast.hide { animation: toastOut 0.3s ease forwards; }
+        .toast-success { background: #1e3a2f; border: 1px solid #22c55e; color: #86efac; }
+        .toast-error { background: #3b0a0a; border: 1px solid #ef4444; color: #fca5a5; }
+        @keyframes toastIn { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes toastOut { from { opacity: 1; } to { opacity: 0; transform: translateY(16px); } }
+        .goal-achieved { background: linear-gradient(90deg, rgba(0,212,170,0.2) 0%, rgba(0,184,148,0.2) 100%); border: 2px solid #00d4aa; padding: 10px; border-radius: 8px; margin-top: 8px; color: #00d4aa; font-weight: 600; text-align: center; font-size: 13px; }
+        .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); align-items: center; justify-content: center; }
+        .modal.show { display: flex; }
+        .modal-content { background: #1a1f26; padding: 24px; border-radius: 12px; max-width: 95%; width: 100%; max-height: 90vh; overflow-y: auto; border: 1px solid #2a3038; }
+        .section-fade { animation: fadeIn 0.2s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
-    <div id="app">
-        <!-- Login Form -->
-        <div id="loginForm" class="login-container">
-            <div class="login-card">
-                <h1 class="login-title">BJJ Training Journal</h1>
-                <div class="form-group">
-                    <label>Username:</label>
-                    <input type="text" id="username" class="form-control" required>
+<div id="app">
+    <!-- Login -->
+    <div id="loginForm" class="login-container">
+        <div class="login-card">
+            <h1 class="login-title">MatTime</h1>
+            <div class="form-group"><label>Username:</label><input type="text" id="username" class="form-control" required></div>
+            <div class="form-group"><label>Password:</label><input type="password" id="password" class="form-control" required></div>
+            <div class="form-group" style="display:flex;align-items:center;gap:8px;">
+                <input type="checkbox" id="rememberMe" style="width:auto;margin:0;">
+                <label for="rememberMe" style="margin:0;color:#8a9ba8;font-size:14px;">Remember me</label>
+            </div>
+            <button onclick="login()" class="btn" style="width:100%;margin-bottom:10px;">Login</button>
+            <p style="text-align:center;color:#8a9ba8;font-size:14px;margin-bottom:10px;">Don't have an account?</p>
+            <button onclick="showRegisterForm()" class="btn btn-secondary" style="width:100%;">Register</button>
+            <div id="authMessage"></div>
+        </div>
+    </div>
+
+    <!-- Registration -->
+    <div id="registerForm" class="login-container hidden">
+        <div class="login-card">
+            <h1 class="login-title">Create Account</h1>
+            <div class="form-group"><label>Username:</label><input type="text" id="regUsername" class="form-control" required></div>
+            <div class="form-group"><label>Password:</label><input type="password" id="regPassword" class="form-control" required></div>
+            <div class="form-group"><label>Confirm Password:</label><input type="password" id="regConfirmPassword" class="form-control" required></div>
+            <div class="form-group"><label>Name:</label><input type="text" id="regName" class="form-control" placeholder="Your full name"></div>
+            <div class="form-group"><label>Age:</label><input type="number" id="regAge" class="form-control" placeholder="Age" min="1" max="100"></div>
+            <div class="form-group"><label>Weight (kg):</label><input type="number" id="regWeight" class="form-control" placeholder="Weight in kg" step="0.1"></div>
+            <div class="form-group"><label>Height (cm):</label><input type="number" id="regHeight" class="form-control" placeholder="Height in cm"></div>
+            <div class="form-group"><label>Belt:</label>
+                <select id="regBelt" class="form-control">
+                    <option value="">Select belt</option><option value="White">White</option><option value="Blue">Blue</option><option value="Purple">Purple</option><option value="Brown">Brown</option><option value="Black">Black</option>
+                </select>
+            </div>
+            <button onclick="registerUser()" class="btn" style="width:100%;margin-bottom:10px;">Register</button>
+            <button onclick="cancelRegister()" class="btn btn-secondary" style="width:100%;">Cancel</button>
+            <div id="regMessage"></div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toastContainer"></div>
+
+    <!-- Main App -->
+    <div id="mainApp" class="hidden">
+        <div class="header">
+            <div class="header-content">
+                <div class="logo" onclick="showDashboard()">
+                    <img src="MatTiime.logo.png" alt="MatTime" style="height:32px;width:auto;">
                 </div>
-                <div class="form-group">
-                    <label>Password:</label>
-                    <input type="password" id="password" class="form-control" required>
+                <div style="display:flex;align-items:center;gap:10px;flex-shrink:0;">
+                    <button onclick="toggleEntryForm()" class="btn">+ New</button>
+                    <div class="hamburger" onclick="toggleMenu()"><span></span><span></span><span></span></div>
                 </div>
-                <div class="form-group" style="display: flex; align-items: center; gap: 8px;">
-                    <input type="checkbox" id="rememberMe" style="width: auto; margin: 0;">
-                    <label for="rememberMe" style="margin: 0; color: #8a9ba8; font-size: 14px;">Remember me</label>
-                </div>
-                <button onclick="login()" class="btn" style="width: 100%; margin-bottom: 10px;">Login</button>
-                <p style="text-align: center; color: #8a9ba8; font-size: 14px; margin-bottom: 10px;">Don't have an account? Register now</p>
-                <button onclick="showRegisterForm()" class="btn btn-secondary" style="width: 100%;">Register</button>
-                <div id="authMessage"></div>
             </div>
         </div>
-
-        <!-- Registration Form -->
-        <div id="registerForm" class="login-container hidden">
-            <div class="login-card">
-                <h1 class="login-title">Create Account</h1>
-                <div class="form-group">
-                    <label>Username:</label>
-                    <input type="text" id="regUsername" class="form-control" required>
-                </div>
-                <div class="form-group">
-                    <label>Password:</label>
-                    <input type="password" id="regPassword" class="form-control" required>
-                </div>
-                <div class="form-group">
-                    <label>Confirm Password:</label>
-                    <input type="password" id="regConfirmPassword" class="form-control" required>
-                </div>
-                <div class="form-group">
-                    <label>Name:</label>
-                    <input type="text" id="regName" class="form-control" placeholder="Your full name">
-                </div>
-                <div class="form-group">
-                    <label>Age:</label>
-                    <input type="number" id="regAge" class="form-control" placeholder="Age" min="1" max="100">
-                </div>
-                <div class="form-group">
-                    <label>Weight (kg):</label>
-                    <input type="number" id="regWeight" class="form-control" placeholder="Weight in kg" step="0.1">
-                </div>
-                <div class="form-group">
-                    <label>Height (cm):</label>
-                    <input type="number" id="regHeight" class="form-control" placeholder="Height in cm">
-                </div>
-                <div class="form-group">
-                    <label>Belt:</label>
-                    <select id="regBelt" class="form-control">
-                        <option value="">Select belt</option>
-                        <option value="White">White</option>
-                        <option value="Blue">Blue</option>
-                        <option value="Purple">Purple</option>
-                        <option value="Brown">Brown</option>
-                        <option value="Black">Black</option>
-                    </select>
-                </div>
-                <div class="nav-buttons">
-                    <button onclick="registerUser()" class="btn">Register</button>
-                    <button onclick="cancelRegister()" class="btn btn-secondary">Cancel</button>
-                </div>
-                <div id="regMessage"></div>
-            </div>
+        <div class="nav-overlay" id="navOverlay" onclick="closeMenu()"></div>
+        <div class="nav-menu" id="navMenu">
+            <div class="nav-close" onclick="closeMenu()">&times;</div>
+            <button onclick="showDashboard();closeMenu();" class="btn btn-secondary">Dashboard</button>
+            <button onclick="showEntries();closeMenu();" class="btn btn-secondary">Activities</button>
+            <button onclick="showProfile();closeMenu();" class="btn btn-secondary">Profile</button>
+            <button onclick="logout()" class="btn btn-secondary">Logout</button>
         </div>
 
-        <!-- Main App -->
-        <div id="mainApp" class="hidden">
-            <div class="header">
-                <div class="header-content">
-                    <div class="logo">BJJ Journal</div>
-                    <div class="user-menu">
-                        <button onclick="toggleEntryForm()" class="btn">+ New</button>
-                        <button onclick="showDashboard()" class="btn btn-secondary">Dashboard</button>
-                        <button onclick="showEntries()" class="btn btn-secondary">Activities</button>
-                        <button onclick="showProfile()" class="btn btn-secondary">Profile</button>
-                        <button onclick="logout()" class="btn btn-secondary">Logout</button>
+        <div class="container">
+            <!-- Dashboard -->
+            <div id="dashboard">
+                <div id="injuryBanner" style="display:none;background:linear-gradient(90deg,rgba(255,107,107,0.2) 0%,rgba(255,82,82,0.2) 100%);border:2px solid #ff6b6b;padding:12px 16px;border-radius:8px;margin-bottom:12px;justify-content:space-between;align-items:center;">
+                    <div style="color:#ff6b6b;font-weight:600;font-size:14px;">⚠️ Injury recorded - Consider rest</div>
+                    <button onclick="markInjuryHealed()" class="btn" style="background:#ff6b6b;padding:6px 12px;font-size:12px;">Healed?</button>
+                </div>
+                <div id="recCard" class="rec-card">
+                    <div class="rec-card-title">🎯 Training Recommendations</div>
+                    <div id="recommendationsContainer"><div class="rec-empty">Loading recommendations...</div></div>
+                </div>
+                <div class="card">
+                    <div class="card-header"><h3 class="card-title">Goal Tracking</h3></div>
+                    <div id="currentProgressStats"></div>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Training Overview</h3>
+                        <select id="periodFilter" class="form-control" style="width:auto;padding:6px 10px;font-size:12px;" onchange="filterDashboard()">
+                            <option value="7d">7 Days</option><option value="30d" selected>30 Days</option><option value="this_month">This Month</option><option value="6m">6 Months</option><option value="1y">1 Year</option><option value="all">All Time</option>
+                        </select>
+                    </div>
+                    <div id="dashboardStats" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:15px;"></div>
+                    <div id="dashboardCharts"></div>
+                </div>
+            </div>
+
+            <!-- Entry Form -->
+            <div id="entryForm" class="hidden">
+                <div class="card">
+                    <div class="card-header"><h3 id="formTitle" class="card-title">New Training Activity</h3></div>
+                    <div class="form-group"><label>Date:</label><input type="date" id="entryDate" class="form-control" required></div>
+                    <div id="questions"></div>
+                    <div style="display:flex;gap:10px;margin-top:20px;">
+                        <button onclick="saveEntry()" class="btn">Save Activity</button>
+                        <button onclick="cancelEdit()" class="btn btn-secondary">Cancel</button>
                     </div>
                 </div>
             </div>
-            
-            <div class="container">
-                <!-- Dashboard -->
-                <div id="dashboard">
-                    <div class="card">
-                        <div class="card-header">
-                            <h3 class="card-title">Training Overview</h3>
-                            <select id="periodFilter" class="form-control" style="width: auto; padding: 6px 12px; font-size: 12px;" onchange="filterDashboard()">
-                                <option value="7d">Past 7 Days</option>
-                                <option value="30d" selected>Past 30 Days</option>
-                                <option value="this_month">This Month</option>
-                                <option value="6m">6 Months</option>
-                                <option value="1y">1 Year</option>
-                                <option value="all">All Time</option>
-                            </select>
-                        </div>
-                        <div id="dashboardStats" class="dashboard-stats">
-                            <!-- Stats cards will be populated here -->
-                        </div>
+
+            <!-- Activities List -->
+            <div id="activitiesSection" class="hidden"><div id="entriesList"></div></div>
+
+            <!-- Profile Section -->
+            <div id="profileSection" class="hidden">
+                <div class="card">
+                    <div class="card-header"><h3 class="card-title">Profile</h3></div>
+                    <div style="display:flex;flex-wrap:wrap;gap:6px;border-bottom:1px solid #2a3038;margin-bottom:15px;padding-bottom:10px;">
+                        <button id="profileTab" onclick="showProfileTab('profile')" class="btn btn-secondary" style="border-radius:0;font-size:11px;padding:6px 10px;border-bottom:2px solid #00d4aa;">Profile</button>
+                        <button id="injuryTab" onclick="showProfileTab('injury')" class="btn btn-secondary" style="border-radius:0;font-size:11px;padding:6px 10px;">Injuries</button>
+                        <button id="goalsTab" onclick="showProfileTab('goals')" class="btn btn-secondary" style="border-radius:0;font-size:11px;padding:6px 10px;">Goals</button>
+                        <button id="passwordTab" onclick="showProfileTab('password')" class="btn btn-secondary" style="border-radius:0;font-size:11px;padding:6px 10px;">Password</button>
                     </div>
-                    <div id="dashboardCharts">
-                        <!-- Charts will be populated here -->
-                    </div>
-                </div>
-                
-                <!-- Entry Form -->
-                <div id="entryForm" class="hidden">
-                    <div class="card">
-                        <div class="card-header">
-                            <h3 id="formTitle" class="card-title">New Training Activity</h3>
+
+                    <!-- Profile Tab -->
+                    <div id="profileInfoTab">
+                        <div class="form-group"><label>Name:</label><input type="text" id="profileName" class="form-control" placeholder="Your name"></div>
+                        <div class="form-group"><label>Age:</label><input type="number" id="profileAge" class="form-control" placeholder="Age" min="1" max="100"></div>
+                        <div class="form-group"><label>Weight (kg):</label><input type="number" id="profileWeight" class="form-control" placeholder="Weight" step="0.1"></div>
+                        <div class="form-group"><label>Height (cm):</label><input type="number" id="profileHeight" class="form-control" placeholder="Height"></div>
+                        <div class="form-group"><label>Belt:</label>
+                            <select id="profileBelt" class="form-control"><option value="">Select belt</option><option value="White">White</option><option value="Blue">Blue</option><option value="Purple">Purple</option><option value="Brown">Brown</option><option value="Black">Black</option></select>
                         </div>
-                        <div class="form-group">
-                            <label>Date:</label>
-                            <input type="date" id="entryDate" class="form-control" required>
-                        </div>
-                        <div id="questions"></div>
-                        <div class="nav-buttons" style="margin-top: 20px;">
-                            <button onclick="saveEntry()" class="btn">Save Activity</button>
-                            <button onclick="cancelEdit()" class="btn btn-secondary">Cancel</button>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Activities List -->
-                <div id="activitiesSection" class="hidden">
-                    <div id="entriesList"></div>
-                </div>
-                
-                <!-- Profile Section -->
-                <div id="profileSection" class="hidden">
-                    <div class="card">
-                        <div class="card-header">
-                            <h3 id="profileTitle" class="card-title">Profile</h3>
-                        </div>
-                        <div class="form-group">
-                            <label>Name:</label>
-                            <input type="text" id="profileName" class="form-control" placeholder="Your name">
-                        </div>
-                        <div class="form-group">
-                            <label>Age:</label>
-                            <input type="number" id="profileAge" class="form-control" placeholder="Age" min="1" max="100">
-                        </div>
-                        <div class="form-group">
-                            <label>Weight (kg):</label>
-                            <input type="number" id="profileWeight" class="form-control" placeholder="Weight in kg" step="0.1">
-                        </div>
-                        <div class="form-group">
-                            <label>Height (cm):</label>
-                            <input type="number" id="profileHeight" class="form-control" placeholder="Height in cm">
-                        </div>
-                        <div class="form-group">
-                            <label>Belt:</label>
-                            <select id="profileBelt" class="form-control">
-                                <option value="">Select belt</option>
-                                <option value="White">White</option>
-                                <option value="Blue">Blue</option>
-                                <option value="Purple">Purple</option>
-                                <option value="Brown">Brown</option>
-                                <option value="Black">Black</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>Current Password:</label>
-                            <input type="password" id="currentPassword" class="form-control" placeholder="Enter current password">
-                        </div>
-                        <div class="form-group">
-                            <label>New Password:</label>
-                            <input type="password" id="newPassword" class="form-control" placeholder="Enter new password">
-                        </div>
-                        <div class="form-group">
-                            <label>Confirm New Password:</label>
-                            <input type="password" id="confirmPassword" class="form-control" placeholder="Confirm new password">
-                        </div>
-                        <div class="nav-buttons">
+                        <div style="display:flex;gap:10px;margin-top:20px;">
                             <button onclick="saveProfile()" class="btn">Save Profile</button>
-                            <button onclick="changePassword()" class="btn" style="background: #ff6b6b;">Change Password</button>
+                            <button onclick="cancelProfile()" class="btn btn-secondary">Cancel</button>
+                        </div>
+                    </div>
+
+                    <!-- Injury Tab -->
+                    <div id="injuryInfoTab" class="hidden">
+                        <button onclick="showInjuryModal()" class="btn" style="margin-bottom:15px;">+ Log Injury</button>
+                        <div id="injuryList"></div>
+                    </div>
+
+                    <!-- Goals Tab -->
+                    <div id="goalsInfoTab" class="hidden">
+                        <div class="form-group"><label>Sessions per week goal:</label><input type="number" id="goalSessions" class="form-control" placeholder="Sessions" min="1" max="14"></div>
+                        <div class="form-group"><label>Rounds per week goal:</label><input type="number" id="goalRounds" class="form-control" placeholder="Rounds" min="1" max="100"></div>
+                        <div id="currentGoalInfo" style="margin:15px 0;padding:12px;background:#252b34;border-radius:8px;display:none;">
+                            <h4 style="color:#00d4aa;margin-bottom:8px;font-size:14px;">Current Progress</h4>
+                            <div id="goalProgress"></div>
+                        </div>
+                        <div id="goalsMessage"></div>
+                        <div style="display:flex;align-items:center;gap:8px;margin-top:15px;">
+                            <input type="checkbox" id="hideRecommendations" style="width:auto;margin:0;accent-color:#00d4aa;" onchange="toggleHideRecommendations()">
+                            <label for="hideRecommendations" style="margin:0;color:#8a9ba8;font-size:13px;cursor:pointer;">Hide Recommendations</label>
+                        </div>
+                        <div style="display:flex;gap:10px;margin-top:20px;">
+                            <button onclick="saveGoals()" class="btn">Save Goals</button>
+                            <button onclick="loadGoalProgress()" class="btn btn-secondary">Progress</button>
+                            <button onclick="cancelProfile()" class="btn btn-secondary">Cancel</button>
+                        </div>
+                    </div>
+
+                    <!-- Password Tab -->
+                    <div id="passwordInfoTab" class="hidden">
+                        <div class="form-group"><label>Current Password:</label><input type="password" id="currentPassword" class="form-control" placeholder="Current password"></div>
+                        <div class="form-group"><label>New Password:</label><input type="password" id="newPassword" class="form-control" placeholder="New password"></div>
+                        <div class="form-group"><label>Confirm New Password:</label><input type="password" id="confirmPassword" class="form-control" placeholder="Confirm password"></div>
+                        <div style="display:flex;gap:10px;margin-top:20px;">
+                            <button onclick="changePassword()" class="btn" style="background:#ff6b6b;">Change Password</button>
                             <button onclick="cancelProfile()" class="btn btn-secondary">Cancel</button>
                         </div>
                     </div>
@@ -444,1419 +262,839 @@
             </div>
         </div>
     </div>
+</div>
 
-    <script>
-        // Global variables - MUST be declared first
-        const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
-            ? 'http://localhost:8000' 
-            : 'https://bjjjournal-production.up.railway.app';
-        let token = localStorage.getItem('bjj_token');
-        let questions = [];
-        let editingEntry = null;
-        let dashboardData = null;
-        
-        console.log('Global variables set, API_BASE:', API_BASE);
-        
-        // Initialize app with improved credential loading
-        function initializeApp() {
-            if (token) {
-                showMainApp();
-                return;
-            }
-            
-            // Try to load saved credentials
-            setTimeout(() => {
-                try {
-                    const usernameField = document.getElementById('username');
-                    const passwordField = document.getElementById('password');
-                    const rememberField = document.getElementById('rememberMe');
-                    
-                    if (!usernameField || !passwordField || !rememberField) return;
-                    
-                    // Check for any saved credentials
-                    const keys = Object.keys(localStorage).filter(key => key.startsWith('bjj_credentials_'));
-                    if (keys.length > 0) {
-                        const latestKey = keys[keys.length - 1];
-                        const username = latestKey.replace('bjj_credentials_', '');
-                        const credentials = loadCredentials(username);
-                        
-                        if (credentials) {
-                            usernameField.value = credentials.username;
-                            passwordField.value = credentials.password;
-                            rememberField.checked = true;
-                        }
-                    }
-                } catch (error) {
-                    console.error('Failed to initialize credentials:', error);
-                }
-            }, 100);
-        }
-        
-        // Initialize when DOM is ready
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', initializeApp);
-        } else {
-            initializeApp();
-        }
+<!-- Injury Modal -->
+<div id="injuryModal" class="modal">
+    <div class="modal-content">
+        <h3 style="margin-bottom:15px;color:#ff6b6b;">Log Injury</h3>
+        <div class="form-group"><label>Injured Area:</label>
+            <select id="injuredArea" class="form-control"><option value="">Select area</option><option value="Knee">Knee</option><option value="Ankle">Ankle</option><option value="Shoulder">Shoulder</option><option value="Elbow">Elbow</option><option value="Wrist">Wrist</option><option value="Neck">Neck</option><option value="Back">Back</option><option value="Hip">Hip</option><option value="Finger">Finger</option><option value="Toe">Toe</option><option value="Rib">Rib</option><option value="Other">Other</option></select>
+        </div>
+        <div class="form-group"><label>Date:</label><input type="date" id="injuryDate" class="form-control"></div>
+        <div class="form-group"><label>End Date (blank if still injured):</label><input type="date" id="injuryEndDate" class="form-control"></div>
+        <div class="form-group"><label>Cause:</label>
+            <select id="injuryCause" class="form-control"><option value="">Select cause</option><option value="Submission attempt">Submission attempt</option><option value="Fell awkwardly">Fell awkwardly</option><option value="Partner falling">Partner falling</option><option value="Accidental strike">Accidental strike</option><option value="Other">Other</option></select>
+        </div>
+        <div class="form-group"><label>Notes:</label><textarea id="injuryNotes" class="form-control" rows="3" placeholder="Details..."></textarea></div>
+        <div style="display:flex;gap:10px;margin-top:20px;">
+            <button onclick="saveInjury()" class="btn">Save</button>
+            <button onclick="closeInjuryModal()" class="btn btn-secondary">Cancel</button>
+        </div>
+    </div>
+</div>
 
-        // Storage utilities with error handling
-        function saveCredentials(username, password) {
-            if (!username || !password) return false;
+<!-- Healed Modal -->
+<div id="healedModal" class="modal">
+    <div class="modal-content" style="max-width:350px;">
+        <h3 style="margin-bottom:15px;color:#00d4aa;">Mark as Healed?</h3>
+        <p style="color:#8a9ba8;margin-bottom:20px;font-size:14px;">This will set today as the recovery date. Ready to train again?</p>
+        <div style="display:flex;gap:10px;">
+            <button onclick="confirmHealedInjury()" class="btn" style="flex:1;">Yes, Healed!</button>
+            <button onclick="closeHealedModal()" class="btn btn-secondary" style="flex:1;">Not Yet</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+        ? 'http://localhost:8000'
+        : 'https://bjjjournal-production.up.railway.app';
+    let token = localStorage.getItem('bjj_token');
+    let questions = [];
+    let editingEntry = null;
+    let dashboardData = null;
+    let editingInjury = null;
+
+    // --- Init ---
+    function initializeApp() {
+        if (token) { showMainApp(); return; }
+        setTimeout(() => {
             try {
-                if (typeof(Storage) === "undefined") return false;
-                const credentials = {
-                    username: username,
-                    password: password,
-                    timestamp: Date.now(),
-                    expires: Date.now() + (30 * 24 * 60 * 60 * 1000) // 30 days
-                };
-                localStorage.setItem(`bjj_credentials_${username.toLowerCase()}`, JSON.stringify(credentials));
-                return true;
-            } catch (error) {
-                console.error('Failed to save credentials:', error);
-                return false;
-            }
-        }
-        
-        function loadCredentials(username) {
-            if (!username) return null;
-            try {
-                if (typeof(Storage) === "undefined") return null;
-                const stored = localStorage.getItem(`bjj_credentials_${username.toLowerCase()}`);
-                if (!stored) return null;
-                
-                const credentials = JSON.parse(stored);
-                if (Date.now() > credentials.expires) {
-                    clearCredentials(username);
-                    return null;
-                }
-                return credentials;
-            } catch (error) {
-                console.error('Failed to load credentials:', error);
-                return null;
-            }
-        }
-        
-        function clearCredentials(username) {
-            if (!username) return;
-            try {
-                if (typeof(Storage) !== "undefined") {
-                    localStorage.removeItem(`bjj_credentials_${username.toLowerCase()}`);
-                }
-            } catch (error) {
-                console.error('Failed to clear credentials:', error);
-            }
-        }
-
-        function showRegisterForm() {
-            document.getElementById('loginForm').classList.add('hidden');
-            document.getElementById('registerForm').classList.remove('hidden');
-        }
-        
-        function cancelRegister() {
-            document.getElementById('registerForm').classList.add('hidden');
-            document.getElementById('loginForm').classList.remove('hidden');
-            clearRegisterForm();
-        }
-        
-        function clearRegisterForm() {
-            document.getElementById('regUsername').value = '';
-            document.getElementById('regPassword').value = '';
-            document.getElementById('regConfirmPassword').value = '';
-            document.getElementById('regName').value = '';
-            document.getElementById('regAge').value = '';
-            document.getElementById('regWeight').value = '';
-            document.getElementById('regHeight').value = '';
-            document.getElementById('regBelt').value = '';
-            document.getElementById('regMessage').innerHTML = '';
-        }
-        
-        async function registerUser() {
-            const username = document.getElementById('regUsername').value;
-            const password = document.getElementById('regPassword').value;
-            const confirmPassword = document.getElementById('regConfirmPassword').value;
-            const name = document.getElementById('regName').value;
-            const age = document.getElementById('regAge').value;
-            const weight = document.getElementById('regWeight').value;
-            const height = document.getElementById('regHeight').value;
-            const belt = document.getElementById('regBelt').value;
-            
-            if (!username || !password) {
-                showRegMessage('Please enter username and password', 'error');
-                return;
-            }
-            
-            if (password !== confirmPassword) {
-                showRegMessage('Passwords do not match', 'error');
-                return;
-            }
-            
-            try {
-                // Register user
-                const response = await fetch(`${API_BASE}/auth/register`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username, password })
-                });
-                
-                if (response.ok) {
-                    // Login automatically
-                    const loginResponse = await fetch(`${API_BASE}/auth/login`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ username, password })
-                    });
-                    
-                    if (loginResponse.ok) {
-                        const data = await loginResponse.json();
-                        token = data.access_token;
-                        localStorage.setItem('bjj_token', token);
-                        
-                        // Create profile if any profile data provided
-                        if (name || age || weight || height || belt) {
-                            const profileData = {
-                                name: name || null,
-                                age: parseInt(age) || null,
-                                weight: parseFloat(weight) || null,
-                                height: parseFloat(height) || null,
-                                belt: belt || null
-                            };
-                            
-                            await fetch(`${API_BASE}/profile/`, {
-                                method: 'PUT',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                    'Authorization': `Bearer ${token}`
-                                },
-                                body: JSON.stringify(profileData)
-                            });
-                        }
-                        
-                        // Clear registration form and hide it
-                        clearRegisterForm();
-                        document.getElementById('registerForm').classList.add('hidden');
-                        
-                        showMainApp();
-                    } else {
-                        showRegMessage('Registration successful but login failed', 'error');
-                    }
-                } else {
-                    const error = await response.json();
-                    showRegMessage('Registration failed: ' + (error.detail || 'Username may already exist'), 'error');
-                }
-            } catch (error) {
-                showRegMessage('Connection error', 'error');
-            }
-        }
-        
-        function showRegMessage(message, type) {
-            const messageDiv = document.getElementById('regMessage');
-            messageDiv.innerHTML = `<div class="message ${type}">${message}</div>`;
-            setTimeout(() => messageDiv.innerHTML = '', 3000);
-        }
-
-        async function register() {
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
-            
-            try {
-                const response = await fetch(`${API_BASE}/auth/register`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username, password })
-                });
-                
-                if (response.ok) {
-                    showMessage('Registration successful! Please login.', 'success');
-                } else {
-                    const error = await response.json();
-                    showMessage('Registration failed: ' + (error.detail || 'Unknown error'), 'error');
-                }
-            } catch (error) {
-                showMessage('Error: ' + error.message, 'error');
-            }
-        }
-
-        async function login() {
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
-            const rememberMe = document.getElementById('rememberMe').checked;
-            
-            if (!username || !password) {
-                showMessage('Please enter username and password', 'error');
-                return;
-            }
-            
-            try {
-                const response = await fetch(`${API_BASE}/auth/login`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username, password })
-                });
-                
-                if (response.ok) {
-                    const data = await response.json();
-                    token = data.access_token;
-                    localStorage.setItem('bjj_token', token);
-                    
-                    // Save credentials immediately after successful login
-                    if (rememberMe) {
-                        const saved = saveCredentials(username, password);
-                        if (!saved) {
-                            console.warn('Failed to save credentials');
-                        }
-                    } else {
-                        clearCredentials(username);
-                    }
-                    
-                    showMainApp();
-                } else {
-                    const error = await response.json();
-                    showMessage('Login failed: ' + (error.detail || 'Unknown error'), 'error');
-                    // Clear invalid credentials
-                    clearCredentials(username);
-                }
-            } catch (error) {
-                showMessage('Error: ' + error.message, 'error');
-                clearCredentials(username);
-            }
-        }
-
-        function logout() {
-            const username = document.getElementById('username')?.value;
-            localStorage.removeItem('bjj_token');
-            if (username) {
-                clearCredentials(username);
-            }
-            token = null;
-            document.getElementById('loginForm').classList.remove('hidden');
-            document.getElementById('mainApp').classList.add('hidden');
-        }
-
-        async function showMainApp() {
-            document.getElementById('loginForm').classList.add('hidden');
-            document.getElementById('mainApp').classList.remove('hidden');
-            await loadQuestions();
-            await loadDashboard();
-            await checkProfileOnLogin();
-        }
-
-        async function loadQuestions() {
-            try {
-                const response = await fetch(`${API_BASE}/questions/`);
-                questions = await response.json();
-                renderQuestionForm();
-            } catch (error) {
-                console.error('Failed to load questions:', error);
-            }
-        }
-
-        function renderQuestionForm() {
-            const container = document.getElementById('questions');
-            container.innerHTML = '';
-            
-            questions.forEach(question => {
-                const div = document.createElement('div');
-                div.className = 'form-group';
-                
-                let input = '';
-                if (question.question_text === 'Session Type') {
-                    input = `<select id="q${question.id}" class="form-control">
-                        <option value="">Select session type</option>
-                        <option value="Gi">Gi</option>
-                        <option value="No Gi">No Gi</option>
-                        <option value="Both">Both</option>
-                    </select>`;
-                } else if (question.question_text === 'Training') {
-                    input = `<select id="q${question.id}" class="form-control" onchange="showTrainingDescription(this.value)">
-                        <option value="">Select training type</option>
-                        <option value="Regular Class">Regular Class</option>
-                        <option value="Open Mat">Open Mat</option>
-                        <option value="Competition Training">Competition Training</option>
-                        <option value="Drilling Session">Drilling Session</option>
-                        <option value="Private Lesson">Private Lesson</option>
-                        <option value="Seminar/Workshop">Seminar/Workshop</option>
-                        <option value="Light Training">Light Training</option>
-                        <option value="Competition">Competition</option>
-                    </select>
-                    <div id="trainingDescription" style="font-size: 12px; color: #8a9ba8; margin-top: 5px; font-style: italic;"></div>`;
-                } else if (question.question_type === 'rating') {
-                    input = `<select id="q${question.id}" class="form-control" onchange="showRPEDescription(this.value)">
-                        <option value="">Select rating</option>
-                        <option value="1">1</option>
-                        <option value="2">2</option>
-                        <option value="3">3</option>
-                        <option value="4">4</option>
-                        <option value="5">5</option>
-                        <option value="6">6</option>
-                        <option value="7">7</option>
-                        <option value="8">8</option>
-                        <option value="9">9</option>
-                    </select>
-                    <div id="rpeDescription" style="font-size: 12px; color: #8a9ba8; margin-top: 5px; font-style: italic;"></div>`;
-                } else if (question.question_text === 'Rounds Rolled') {
-                    input = `<input type="number" id="q${question.id}" class="form-control" min="0" max="20" placeholder="Number of rounds">`;
-                } else if (question.question_text === 'Summarise this session with a few words') {
-                    input = `<input type="text" id="q${question.id}" class="form-control" maxlength="100">`;
-                } else if (question.question_text === 'Journal Notes') {
-                    input = `<textarea id="q${question.id}" class="form-control" rows="4" placeholder="Enter each note on a new line"></textarea>`;
-                } else {
-                    if (question.question_text === 'Class Technique') {
-                        input = `<div style="position: relative;">
-                            <input type="text" id="q${question.id}_position" class="form-control" placeholder="Search position/area" oninput="filterPositions(this.value, ${question.id})" onfocus="showPositionDropdown(${question.id})" onblur="hidePositionDropdown(${question.id})" style="margin-bottom: 10px;">
-                            <div id="positionDropdown${question.id}" class="technique-dropdown hidden">
-                                <!-- Position options will be populated by JavaScript -->
-                            </div>
-                            <select id="q${question.id}_skill" class="form-control" disabled onchange="updateTechniqueValue(${question.id})">
-                                <option value="">Select skill type</option>
-                            </select>
-                            <select id="q${question.id}_submission" class="form-control hidden" onchange="updateTechniqueValue(${question.id})">
-                                <option value="">Select submission</option>
-                            </select>
-                            <input type="hidden" id="q${question.id}" class="form-control">
-                            <input type="text" id="q${question.id}_other" class="form-control hidden" placeholder="Enter custom position/technique" style="margin-top: 10px;">
-                        </div>`;
-                    } else {
-                        input = `<textarea id="q${question.id}" class="form-control" rows="3"></textarea>`;
+                const keys = Object.keys(localStorage).filter(k => k.startsWith('bjj_credentials_'));
+                if (keys.length > 0) {
+                    const username = keys[keys.length - 1].replace('bjj_credentials_', '');
+                    const creds = loadCredentials(username);
+                    if (creds) {
+                        document.getElementById('username').value = creds.username;
+                        document.getElementById('password').value = creds.password;
+                        document.getElementById('rememberMe').checked = true;
                     }
                 }
-                
-                div.innerHTML = `<label>${question.question_text}:</label>${input}`;
-                container.appendChild(div);
-            });
-        }
+            } catch (e) {}
+        }, 100);
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initializeApp);
+    else initializeApp();
 
-        async function saveEntry() {
-            const entryDate = document.getElementById('entryDate').value;
-            if (!entryDate) {
-                alert('Please select a date');
-                return;
-            }
-            
-            const responses = [];
-            
-            questions.forEach(question => {
-                let value = document.getElementById(`q${question.id}`).value;
-                
-                // Handle 2-tier technique dropdown
-                if (question.question_text === 'Class Technique') {
-                    const positionInput = document.getElementById(`q${question.id}_position`);
-                    const skillSelect = document.getElementById(`q${question.id}_skill`);
-                    const submissionSelect = document.getElementById(`q${question.id}_submission`);
-                    const otherInput = document.getElementById(`q${question.id}_other`);
-                    
-                    if (positionInput && positionInput.value === 'Other' && otherInput && otherInput.value) {
-                        value = otherInput.value;
-                    } else if (positionInput && skillSelect && positionInput.value && skillSelect.value) {
-                        if (skillSelect.value === 'Attacks/Submissions' && submissionSelect && submissionSelect.value) {
-                            value = `${positionInput.value} - ${submissionSelect.value}`;
-                        } else {
-                            value = `${positionInput.value} - ${skillSelect.value}`;
-                        }
-                    }
-                }
-                
-                if (value) {
-                    responses.push({
-                        question_id: question.id,
-                        answer: value
-                    });
-                }
-            });
-            
-            const entryData = {
-                date: new Date(entryDate + 'T12:00:00').toISOString(),
-                session_type: 'training',
-                responses: responses
-            };
-            
-            try {
-                let response;
-                if (editingEntry) {
-                    response = await fetch(`${API_BASE}/entries/${editingEntry.id}`, {
-                        method: 'PUT',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${token}`
-                        },
-                        body: JSON.stringify(entryData)
-                    });
-                } else {
-                    response = await fetch(`${API_BASE}/entries/`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${token}`
-                        },
-                        body: JSON.stringify(entryData)
-                    });
-                }
-                
-                if (response.ok) {
-                    const wasEditing = editingEntry !== null;
-                    editingEntry = null;
-                    document.getElementById('entryForm').classList.add('hidden');
-                    
-                    // Reload dashboard and show it
-                    await loadDashboard();
-                    showDashboard();
-                    showMessage(wasEditing ? 'Entry updated successfully!' : 'Entry saved successfully!', 'success');
-                } else {
-                    showMessage('Failed to save entry', 'error');
-                }
-            } catch (error) {
-                showMessage('Connection error', 'error');
-            }
-        }
+    // --- Credentials ---
+    function saveCredentials(u, p) {
+        if (!u || !p) return false;
+        try { localStorage.setItem(`bjj_credentials_${u.toLowerCase()}`, JSON.stringify({ username: u, password: p, expires: Date.now() + 30*24*60*60*1000 })); return true; } catch(e) { return false; }
+    }
+    function loadCredentials(u) {
+        if (!u) return null;
+        try { const s = localStorage.getItem(`bjj_credentials_${u.toLowerCase()}`); if (!s) return null; const c = JSON.parse(s); if (Date.now() > c.expires) { clearCredentials(u); return null; } return c; } catch(e) { return null; }
+    }
+    function clearCredentials(u) { if (u) try { localStorage.removeItem(`bjj_credentials_${u.toLowerCase()}`); } catch(e) {} }
 
-        async function loadDashboard() {
-            try {
-                const period = document.getElementById('periodFilter')?.value || '30d';
-                const response = await fetch(`${API_BASE}/analytics/dashboard?period=${period}`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                
-                if (response.ok) {
-                    dashboardData = await response.json();
-                    renderDashboard();
-                }
-            } catch (error) {
-                console.error('Failed to load dashboard:', error);
-            }
-        }
-        
-        function filterDashboard() {
-            loadDashboard();
-        }
+    // --- Auth ---
+    function showRegisterForm() { document.getElementById('loginForm').classList.add('hidden'); document.getElementById('registerForm').classList.remove('hidden'); }
+    function cancelRegister() { document.getElementById('registerForm').classList.add('hidden'); document.getElementById('loginForm').classList.remove('hidden'); clearRegisterForm(); }
+    function clearRegisterForm() { ['regUsername','regPassword','regConfirmPassword','regName','regAge','regWeight','regHeight','regBelt'].forEach(id => document.getElementById(id).value = ''); document.getElementById('regMessage').innerHTML = ''; }
 
-        function renderDashboard() {
-            if (!dashboardData) return;
-            
-            const statsContainer = document.getElementById('dashboardStats');
-            statsContainer.innerHTML = `
-                <div class="stat-item">
-                    <div class="stat-label">Total Sessions</div>
-                    <div class="stat-value">${dashboardData.total_sessions}</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-label">Average RPE</div>
-                    <div class="stat-value">${dashboardData.avg_rpe}/9</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-label">Total Rounds</div>
-                    <div class="stat-value">${dashboardData.total_rounds}</div>
-                </div>
-            `;
-            
-            renderCharts();
-        }
-        
-        function renderCharts() {
-            const chartsContainer = document.getElementById('dashboardCharts');
-            let chartsHTML = '';
-            
-            if (Object.keys(dashboardData.session_types).length > 0) {
-                chartsHTML += `
-                    <div class="card">
-                        <div class="card-header">
-                            <h4 class="card-title">Session Types</h4>
-                        </div>
-                        <div class="dashboard-stats">
-                `;
-                
-                for (const [type, count] of Object.entries(dashboardData.session_types)) {
-                    const percentage = ((count / dashboardData.total_sessions) * 100).toFixed(1);
-                    chartsHTML += `
-                        <div class="stat-item">
-                            <div class="stat-label">${type}</div>
-                            <div class="stat-value">${count} (${percentage}%)</div>
-                        </div>
-                    `;
-                }
-                
-                chartsHTML += `</div></div>`;
-            }
-            
-            if (Object.keys(dashboardData.training_types).length > 0) {
-                chartsHTML += `
-                    <div class="card">
-                        <div class="card-header">
-                            <h4 class="card-title">Training Types</h4>
-                        </div>
-                        <div class="dashboard-stats">
-                `;
-                
-                for (const [type, count] of Object.entries(dashboardData.training_types)) {
-                    const percentage = ((count / dashboardData.total_sessions) * 100).toFixed(1);
-                    chartsHTML += `
-                        <div class="stat-item">
-                            <div class="stat-label">${type}</div>
-                            <div class="stat-value">${count} (${percentage}%)</div>
-                        </div>
-                    `;
-                }
-                
-                chartsHTML += `</div></div>`;
-            }
-            
-            // Positions/Areas horizontal bar chart
-            if (dashboardData.positions && Object.keys(dashboardData.positions).length > 0) {
-                chartsHTML += `
-                    <div class="card">
-                        <div class="card-header">
-                            <h4 class="card-title">Most Trained Positions/Areas</h4>
-                        </div>
-                        <div style="padding: 15px;">
-                `;
-                
-                // Sort positions by count and take top 15
-                const sortedPositions = Object.entries(dashboardData.positions)
-                    .sort(([,a], [,b]) => b - a)
-                    .slice(0, 15);
-                
-                const maxCount = Math.max(...sortedPositions.map(([,count]) => count));
-                
-                sortedPositions.forEach(([position, count]) => {
-                    const percentage = ((count / dashboardData.total_sessions) * 100).toFixed(1);
-                    const barWidth = maxCount > 0 ? (count / maxCount) * 100 : 0;
-                    
-                    // Color coding by skill type
-                    let barColor = '#00d4aa'; // Default teal
-                    if (position.toLowerCase().includes('attacks') || position.toLowerCase().includes('submission')) {
-                        barColor = '#ff6b6b'; // Red for attacks/submissions
-                    } else if (position.toLowerCase().includes('sweep')) {
-                        barColor = '#4ecdc4'; // Light blue for sweeps
-                    } else if (position.toLowerCase().includes('escape')) {
-                        barColor = '#ffe66d'; // Yellow for escapes
-                    } else if (position.toLowerCase().includes('defense')) {
-                        barColor = '#a8e6cf'; // Light green for defense
-                    } else if (position.toLowerCase().includes('setup') || position.toLowerCase().includes('transition')) {
-                        barColor = '#ffd3a5'; // Light orange for setups/transitions
+    async function registerUser() {
+        const username = document.getElementById('regUsername').value, password = document.getElementById('regPassword').value, confirmPassword = document.getElementById('regConfirmPassword').value;
+        if (!username || !password) { showRegMessage('Please enter username and password', 'error'); return; }
+        if (password !== confirmPassword) { showRegMessage('Passwords do not match', 'error'); return; }
+        try {
+            const r = await fetch(`${API_BASE}/auth/register`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, password }) });
+            if (r.ok) {
+                const lr = await fetch(`${API_BASE}/auth/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, password }) });
+                if (lr.ok) {
+                    const data = await lr.json(); token = data.access_token; localStorage.setItem('bjj_token', token);
+                    const name = document.getElementById('regName').value, age = document.getElementById('regAge').value, weight = document.getElementById('regWeight').value, height = document.getElementById('regHeight').value, belt = document.getElementById('regBelt').value;
+                    if (name || age || weight || height || belt) {
+                        await fetch(`${API_BASE}/profile/`, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ name: name||null, age: parseInt(age)||null, weight: parseFloat(weight)||null, height: parseFloat(height)||null, belt: belt||null }) });
                     }
-                    
-                    chartsHTML += `
-                        <div style="display: flex; align-items: center; margin-bottom: 8px; font-size: 13px;">
-                            <div style="width: 120px; color: #ffffff; font-weight: 500; text-align: right; padding-right: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                                ${position}
-                            </div>
-                            <div style="flex: 1; background: #252b34; border-radius: 4px; height: 20px; position: relative; margin-right: 10px;">
-                                <div style="background: ${barColor}; height: 100%; width: ${barWidth}%; border-radius: 4px; transition: width 0.3s ease;"></div>
-                            </div>
-                            <div style="width: 60px; color: #8a9ba8; font-size: 12px; text-align: right;">
-                                ${count} (${percentage}%)
-                            </div>
-                        </div>
-                    `;
-                });
-                
-                // Add legend
-                chartsHTML += `
-                        <div style="margin-top: 15px; padding-top: 10px; border-top: 1px solid #2a3038; font-size: 11px; color: #8a9ba8;">
-                            <div style="display: flex; gap: 15px; flex-wrap: wrap;">
-                                <div style="display: flex; align-items: center; gap: 5px;">
-                                    <div style="width: 12px; height: 12px; background: #ff6b6b; border-radius: 2px;"></div>
-                                    <span>Attacks/Submissions</span>
-                                </div>
-                                <div style="display: flex; align-items: center; gap: 5px;">
-                                    <div style="width: 12px; height: 12px; background: #4ecdc4; border-radius: 2px;"></div>
-                                    <span>Sweeps</span>
-                                </div>
-                                <div style="display: flex; align-items: center; gap: 5px;">
-                                    <div style="width: 12px; height: 12px; background: #ffe66d; border-radius: 2px;"></div>
-                                    <span>Escapes</span>
-                                </div>
-                                <div style="display: flex; align-items: center; gap: 5px;">
-                                    <div style="width: 12px; height: 12px; background: #a8e6cf; border-radius: 2px;"></div>
-                                    <span>Defense</span>
-                                </div>
-                                <div style="display: flex; align-items: center; gap: 5px;">
-                                    <div style="width: 12px; height: 12px; background: #ffd3a5; border-radius: 2px;"></div>
-                                    <span>Setups/Transitions</span>
-                                </div>
-                                <div style="display: flex; align-items: center; gap: 5px;">
-                                    <div style="width: 12px; height: 12px; background: #00d4aa; border-radius: 2px;"></div>
-                                    <span>Other</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>`;
-            }
-            
-            // Submissions horizontal bar chart
-            if (dashboardData.submissions && Object.keys(dashboardData.submissions).length > 0) {
-                chartsHTML += `
-                    <div class="card">
-                        <div class="card-header">
-                            <h4 class="card-title">Submission Types</h4>
-                        </div>
-                        <div style="padding: 15px;">
-                `;
-                
-                // Sort submissions by count and take top 15
-                const sortedSubmissions = Object.entries(dashboardData.submissions)
-                    .sort(([,a], [,b]) => b - a)
-                    .slice(0, 15);
-                
-                const maxCount = Math.max(...sortedSubmissions.map(([,count]) => count));
-                
-                sortedSubmissions.forEach(([submission, count]) => {
-                    const percentage = ((count / dashboardData.total_sessions) * 100).toFixed(1);
-                    const barWidth = maxCount > 0 ? (count / maxCount) * 100 : 0;
-                    
-                    // Color coding by submission type
-                    let barColor = '#00d4aa'; // Default teal
-                    if (submission.toLowerCase().includes('choke') || submission.toLowerCase().includes('strangle')) {
-                        barColor = '#ff6b6b'; // Red for chokes
-                    } else if (submission.toLowerCase().includes('lock') || submission.toLowerCase().includes('bar')) {
-                        barColor = '#4ecdc4'; // Light blue for joint locks
-                    } else if (submission.toLowerCase().includes('heel') || submission.toLowerCase().includes('toe')) {
-                        barColor = '#ffe66d'; // Yellow for leg attacks
-                    }
-                    
-                    chartsHTML += `
-                        <div style="display: flex; align-items: center; margin-bottom: 8px; font-size: 13px;">
-                            <div style="width: 120px; color: #ffffff; font-weight: 500; text-align: right; padding-right: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                                ${submission}
-                            </div>
-                            <div style="flex: 1; background: #252b34; border-radius: 4px; height: 20px; position: relative; margin-right: 10px;">
-                                <div style="background: ${barColor}; height: 100%; width: ${barWidth}%; border-radius: 4px; transition: width 0.3s ease;"></div>
-                            </div>
-                            <div style="width: 60px; color: #8a9ba8; font-size: 12px; text-align: right;">
-                                ${count} (${percentage}%)
-                            </div>
-                        </div>
-                    `;
-                });
-                
-                // Add legend
-                chartsHTML += `
-                        <div style="margin-top: 15px; padding-top: 10px; border-top: 1px solid #2a3038; font-size: 11px; color: #8a9ba8;">
-                            <div style="display: flex; gap: 15px; flex-wrap: wrap;">
-                                <div style="display: flex; align-items: center; gap: 5px;">
-                                    <div style="width: 12px; height: 12px; background: #ff6b6b; border-radius: 2px;"></div>
-                                    <span>Chokes</span>
-                                </div>
-                                <div style="display: flex; align-items: center; gap: 5px;">
-                                    <div style="width: 12px; height: 12px; background: #4ecdc4; border-radius: 2px;"></div>
-                                    <span>Joint Locks</span>
-                                </div>
-                                <div style="display: flex; align-items: center; gap: 5px;">
-                                    <div style="width: 12px; height: 12px; background: #ffe66d; border-radius: 2px;"></div>
-                                    <span>Leg Attacks</span>
-                                </div>
-                                <div style="display: flex; align-items: center; gap: 5px;">
-                                    <div style="width: 12px; height: 12px; background: #00d4aa; border-radius: 2px;"></div>
-                                    <span>Other</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>`;
-            }
-            
-            chartsContainer.innerHTML = chartsHTML;
-            
-            // Add new advanced charts
-            renderAdvancedCharts();
-        }
-        
-        function renderAdvancedCharts() {
-            const chartsContainer = document.getElementById('dashboardCharts');
-            let advancedHTML = '';
-            
-            // RPE Trend Line
-            if (dashboardData.rpe_trend && dashboardData.rpe_trend.length > 0) {
-                advancedHTML += `
-                    <div class="card">
-                        <div class="card-header">
-                            <h4 class="card-title">RPE Trend (Last 10 Sessions)</h4>
-                        </div>
-                        <div style="padding: 10px; background: #252b34; border-radius: 8px; margin: 10px 0;">
-                            <div style="display: flex; justify-content: space-between; align-items: end; height: 100px; border-bottom: 1px solid #3a4048; padding-bottom: 10px;">
-                `;
-                
-                const maxRpe = Math.max(...dashboardData.rpe_trend.map(d => d.rpe));
-                dashboardData.rpe_trend.forEach((data, index) => {
-                    const height = (data.rpe / maxRpe) * 80;
-                    advancedHTML += `
-                        <div style="display: flex; flex-direction: column; align-items: center; flex: 1;">
-                            <div style="font-size: 11px; color: #00d4aa; font-weight: 600; margin-bottom: 3px;">${data.rpe}</div>
-                            <div style="width: 4px; background: #00d4aa; height: ${height}px; margin-bottom: 5px; border-radius: 2px;"></div>
-                            <div style="font-size: 10px; color: #8a9ba8; transform: rotate(-45deg); white-space: nowrap;">${data.date}</div>
-                        </div>
-                    `;
-                });
-                
-                advancedHTML += `</div></div></div>`;
-            }
-            
-            // Training Volume Graph
-            if (dashboardData.weekly_volume && dashboardData.weekly_volume.length > 0) {
-                advancedHTML += `
-                    <div class="card">
-                        <div class="card-header">
-                            <h4 class="card-title">Training Volume</h4>
-                        </div>
-                        <div style="padding: 15px; background: #252b34; border-radius: 8px; margin: 10px 0;">
-                            <div style="display: flex; justify-content: space-between; align-items: end; height: 100px; border-bottom: 1px solid #3a4048; padding-bottom: 10px;">
-                `;
-                
-                const maxRounds = Math.max(...dashboardData.weekly_volume.map(d => d.rounds));
-                dashboardData.weekly_volume.forEach((data, index) => {
-                    const height = maxRounds > 0 ? (data.rounds / maxRounds) * 80 : 0;
-                    advancedHTML += `
-                        <div style="display: flex; flex-direction: column; align-items: center; flex: 1;">
-                            <div style="font-size: 11px; color: #00d4aa; font-weight: 600; margin-bottom: 3px;">${data.rounds}</div>
-                            <div style="width: 20px; background: #00d4aa; height: ${height}px; margin-bottom: 5px; border-radius: 2px;"></div>
-                            <div style="font-size: 9px; color: #ffffff; text-align: center; line-height: 1.2;">${data.date_range}</div>
-                            <div style="font-size: 8px; color: #8a9ba8; margin-top: 2px;">${data.sessions} sessions</div>
-                        </div>
-                    `;
-                });
-                
-                advancedHTML += `</div></div></div>`;
-            }
-            
-            // Rounds by Session Type
-            if (dashboardData.rounds_by_session_type && Object.keys(dashboardData.rounds_by_session_type).length > 0) {
-                advancedHTML += `
-                    <div class="card">
-                        <div class="card-header">
-                            <h4 class="card-title">Rounds by Session Type</h4>
-                        </div>
-                        <div style="padding: 10px; background: #252b34; border-radius: 8px; margin: 10px 0;">
-                            <div style="display: flex; justify-content: space-between; align-items: end; height: 80px; border-bottom: 1px solid #3a4048; padding-bottom: 10px;">
-                `;
-                
-                const maxRounds = Math.max(...Object.values(dashboardData.rounds_by_session_type));
-                Object.entries(dashboardData.rounds_by_session_type).forEach(([sessionType, rounds]) => {
-                    const height = maxRounds > 0 ? (rounds / maxRounds) * 60 : 0;
-                    advancedHTML += `
-                        <div style="display: flex; flex-direction: column; align-items: center; flex: 1;">
-                            <div style="width: 20px; background: #00d4aa; height: ${height}px; margin-bottom: 5px; border-radius: 2px;"></div>
-                            <div style="font-size: 12px; color: #ffffff;">${sessionType}</div>
-                            <div style="font-size: 10px; color: #8a9ba8;">${rounds} rounds</div>
-                        </div>
-                    `;
-                });
-                
-                advancedHTML += `</div></div></div>`;
-            }
-            
-            // RPE vs Rounds Correlation - REMOVED
-            
-            chartsContainer.innerHTML += advancedHTML;
-        }
-        
-        const allPositions = [
-            'Stand up', 'Wrestling', 'Guard Pulling',
-            'Closed Guard', 'High Guard', 'Low Guard', 'Cross Guard', 'Clamp Guard', 'Rubber Guard',
-            'Mission Control', 'Williams Guard', 'Double Overhook Guard', 'Overhook Guard',
-            'Collar-and-Sleeve Guard', 'Same-Side Collar-and-Sleeve Guard', 'Cross Collar-and-Sleeve Guard',
-            'Open Guard', 'Seated Guard', 'Supine Guard', 'Combat Base Guard', 'Feet-on-Hips Guard',
-            'Feet-on-Biceps Guard', 'Double Biceps Guard', 'Distance Guard', 'Spider Guard',
-            'Double Spider Guard', 'Lasso Guard', 'Reverse Lasso Guard', 'Spider–Lasso Guard',
-            'Cross Spider Guard', 'Pistol Grip Guard', 'Sleeve Guard', 'De La Riva Guard',
-            'Shallow De La Riva', 'Deep De La Riva', 'Reverse De La Riva', 'De La Riva X',
-            'De La Riva Sit-Up Guard', 'X-Guard', 'Shallow X-Guard', 'Modified X-Guard',
-            'Cross X-Guard', 'Reverse X-Guard', '70/30 Guard', 'Standing X-Guard',
-            'Butterfly Guard', 'Double Butterfly Guard', 'Half Butterfly Guard', 'Butterfly Half Guard',
-            'Seated Butterfly Guard', 'Underhook Butterfly Guard', 'Overhook Butterfly Guard',
-            'Half Guard', 'Knee Shield Half Guard', 'Z-Guard', 'Half Guard with Underhook',
-            'Half Guard with Overhook', 'Deep Half Guard', 'Coyote Half Guard', 'Lockdown',
-            'Electric Chair', 'Old School Half Guard', 'Half Guard Sit-Up', 'Worm Guard',
-            'Squid Guard', 'Reverse Squid Guard', 'Ringworm Guard', 'Gubber Guard',
-            'Lapel De La Riva', 'Lapel Half Guard', 'Lapel Closed Guard', 'Lapel X-Guard',
-            'Lapel Spider Guard', 'Ashi Garami', 'Single-Leg X', 'Cross Ashi', 'Outside Ashi',
-            'Inside Ashi', 'Saddle', 'Honey Hole', '411', '50/50 Guard', '80/20 Guard',
-            'Cross 50/50', 'Turtle Guard', 'Sit-Out Turtle', 'Granby Guard', 'Inverted Guard',
-            'Tornado Guard', 'Rolling Turtle', 'K-Guard', 'Matrix Guard', 'Crab Ride',
-            'Berimbolo', 'Reverse Guard', 'Leg Weave Guard', 'Shin-to-Shin Guard',
-            'Seated Shin-to-Shin', 'Octopus Guard', 'Panda Guard', 'Mount', 'High Mount',
-            'Low Mount', 'S-Mount', 'Side Control', 'Kesa Gatame', 'Reverse Kesa Gatame',
-            'North–South', 'Knee on Belly', 'Back Control', 'Back Mount', 'Body Triangle',
-            'Twister Control', 'Headquarters Position', 'Leg Drag Position', 'Smash Pass Position',
-            'Over-Under Position', 'Float Passing Position', 'Chest-to-Chest Half Guard',
-            'Split Squat Passing Base', 'Other'
-        ];
-        
-        const skillsByPosition = {
-            'Other': ['Custom Entry']
-        };
-        
-        const defaultSkills = ['Attacks/Submissions', 'Sweeps', 'Escapes', 'Defense', 'Setups', 'Transitions', 'Guard Passing'];
-        
-        const submissionTypes = [
-            'Armbar', 'Straight Armbar', 'Juji Gatame', 'Arm Crush', 'Americana', 'Keylock', 'Kimura',
-            'Reverse Kimura', 'Kimura Trap Finish', 'Monoplata', 'Omoplata', 'Reverse Omoplata',
-            'Tarikoplata', 'Mir Lock', 'Shoulder Lock', 'Scissor Choke', 'Triangle Choke',
-            'Front Triangle', 'Reverse Triangle', 'Side Triangle', 'Flying Triangle', 'Arm Triangle Choke',
-            'Head-and-Arm Choke', 'Kata Gatame', 'D\'Arce Choke', 'Brabo Choke', 'Anaconda Choke',
-            'North–South Choke', 'Guillotine Choke', 'High-Elbow Guillotine', 'Arm-In Guillotine',
-            'Low-Elbow Guillotine', 'Power Guillotine', 'Peruvian Necktie', 'Japanese Necktie',
-            'Bulldog Choke', 'Rear Naked Choke', 'Mata Leão', 'Short Choke', 'Bow and Arrow Choke',
-            'Cross Collar Choke', 'Single Collar Choke', 'Loop Choke', 'Clock Choke', 'Baseball Bat Choke',
-            'Ezekiel Choke', 'Modified Ezekiel', 'Paper Cutter Choke', 'Lapels Choke', 'Sliding Collar Choke',
-            'X-Choke', 'Palm-to-Palm Choke', 'Gogoplata', 'Reverse Gogoplata', 'Von Flue Choke',
-            'Punch Choke', 'Neck Crank', 'Can Opener', 'Twister', 'Cervical Crank', 'Spine Crank',
-            'Straight Ankle Lock', 'Ankle Lock', 'Achilles Lock', 'Heel Hook', 'Inside Heel Hook',
-            'Outside Heel Hook', 'Toe Hold', 'Kneebar', 'Calf Slicer', 'Calf Crusher', 'Bicep Slicer',
-            'Arm Slicer', 'Wrist Lock'
-        ];
-        
-        function showPositionDropdown(questionId) {
-            const dropdown = document.getElementById(`positionDropdown${questionId}`);
-            if (dropdown) {
-                populatePositionDropdown(questionId, allPositions);
-                dropdown.classList.remove('hidden');
-            }
-        }
-        
-        function hidePositionDropdown(questionId) {
-            setTimeout(() => {
-                const dropdown = document.getElementById(`positionDropdown${questionId}`);
-                if (dropdown) {
-                    dropdown.classList.add('hidden');
-                }
-            }, 200);
-        }
-        
-        function filterPositions(value, questionId) {
-            const filtered = allPositions.filter(position => 
-                position.toLowerCase().includes(value.toLowerCase())
-            );
-            populatePositionDropdown(questionId, filtered);
-        }
-        
-        function populatePositionDropdown(questionId, positionList) {
-            const dropdown = document.getElementById(`positionDropdown${questionId}`);
-            if (!dropdown) return;
-            
-            dropdown.innerHTML = '';
-            positionList.forEach(position => {
-                const option = document.createElement('div');
-                option.className = 'technique-option';
-                option.textContent = position;
-                option.onclick = () => selectPosition(questionId, position);
-                dropdown.appendChild(option);
-            });
-        }
-        
-        function selectPosition(questionId, position) {
-            const input = document.getElementById(`q${questionId}_position`);
-            const dropdown = document.getElementById(`positionDropdown${questionId}`);
-            
-            input.value = position;
-            dropdown.classList.add('hidden');
-            updateSkillOptions(questionId);
-        }
-        
-        function updateSkillOptions(questionId) {
-            const positionInput = document.getElementById(`q${questionId}_position`);
-            const skillSelect = document.getElementById(`q${questionId}_skill`);
-            const submissionSelect = document.getElementById(`q${questionId}_submission`);
-            const hiddenInput = document.getElementById(`q${questionId}`);
-            const otherInput = document.getElementById(`q${questionId}_other`);
-            
-            const position = positionInput.value;
-            
-            // Clear skill dropdown
-            skillSelect.innerHTML = '<option value="">Select skill type</option>';
-            submissionSelect.classList.add('hidden');
-            submissionSelect.innerHTML = '<option value="">Select submission</option>';
-            
-            if (position === 'Other') {
-                skillSelect.disabled = true;
-                otherInput.classList.remove('hidden');
-                otherInput.focus();
+                    clearRegisterForm(); document.getElementById('registerForm').classList.add('hidden'); showMainApp();
+                } else showRegMessage('Registration ok but login failed', 'error');
+            } else { const e = await r.json(); showRegMessage('Failed: ' + (e.detail || 'Username may exist'), 'error'); }
+        } catch(e) { showRegMessage('Connection error', 'error'); }
+    }
+    function showRegMessage(msg, type) { const d = document.getElementById('regMessage'); d.innerHTML = `<div class="message ${type}">${msg}</div>`; setTimeout(() => d.innerHTML = '', 3000); }
+
+    async function login() {
+        const username = document.getElementById('username').value, password = document.getElementById('password').value, remember = document.getElementById('rememberMe').checked;
+        if (!username || !password) { showMessage('Please enter username and password', 'error'); return; }
+        try {
+            const r = await fetch(`${API_BASE}/auth/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, password }) });
+            if (r.ok) { const d = await r.json(); token = d.access_token; localStorage.setItem('bjj_token', token); if (remember) saveCredentials(username, password); else clearCredentials(username); showMainApp(); }
+            else { showMessage('Login failed', 'error'); clearCredentials(username); }
+        } catch(e) { showMessage('Connection error', 'error'); }
+    }
+
+    function logout() { const u = document.getElementById('username')?.value; localStorage.removeItem('bjj_token'); if (u) clearCredentials(u); token = null; document.getElementById('loginForm').classList.remove('hidden'); document.getElementById('mainApp').classList.add('hidden'); }
+
+    // --- Nav ---
+    function toggleMenu() { document.getElementById('navMenu').classList.add('open'); document.getElementById('navOverlay').classList.add('show'); }
+    function closeMenu() { document.getElementById('navMenu').classList.remove('open'); document.getElementById('navOverlay').classList.remove('show'); }
+
+    // --- Main App ---
+    async function showMainApp() {
+        document.getElementById('loginForm').classList.add('hidden'); document.getElementById('mainApp').classList.remove('hidden');
+        closeMenu();
+        await loadQuestions(); await loadDashboard(); await loadDashboardProgress(); await checkActiveInjuries(); await checkProfileOnLogin(); await loadRecommendations();
+    }
+
+    // --- Sections ---
+    function showDashboard() { document.getElementById('dashboard').classList.remove('hidden'); document.getElementById('activitiesSection').classList.add('hidden'); document.getElementById('entryForm').classList.add('hidden'); document.getElementById('profileSection').classList.add('hidden'); loadDashboardProgress(); checkActiveInjuries(); }
+    function showEntries() { document.getElementById('dashboard').classList.add('hidden'); document.getElementById('activitiesSection').classList.remove('hidden'); document.getElementById('entryForm').classList.add('hidden'); document.getElementById('profileSection').classList.add('hidden'); loadEntries(); }
+    function showProfile() { document.getElementById('dashboard').classList.add('hidden'); document.getElementById('activitiesSection').classList.add('hidden'); document.getElementById('entryForm').classList.add('hidden'); document.getElementById('profileSection').classList.remove('hidden'); showProfileTab('profile'); loadProfile(); loadGoals(); }
+    function cancelProfile() { showDashboard(); }
+
+    function showProfileTab(tab) {
+        ['injuryInfoTab','profileInfoTab','goalsInfoTab','passwordInfoTab'].forEach(id => document.getElementById(id).classList.add('hidden'));
+        ['injuryTab','profileTab','goalsTab','passwordTab'].forEach(id => { document.getElementById(id).style.borderBottom = 'none'; document.getElementById(id).style.background = '#2a3038'; });
+        const map = { injury: 'injuryInfoTab', profile: 'profileInfoTab', goals: 'goalsInfoTab', password: 'passwordInfoTab' };
+        const tabMap = { injury: 'injuryTab', profile: 'profileTab', goals: 'goalsTab', password: 'passwordTab' };
+        document.getElementById(map[tab]).classList.remove('hidden');
+        document.getElementById(tabMap[tab]).style.borderBottom = '2px solid #00d4aa';
+        document.getElementById(tabMap[tab]).style.background = '#3a4048';
+        if (tab === 'injury') loadInjuries();
+    }
+
+    // --- Toast Messages ---
+    function showMessage(message, type) {
+        const icons = { success: '✅', error: '❌', info: 'ℹ️' };
+        const cls = type === 'success' ? 'toast-success' : 'toast-error';
+        const container = document.getElementById('toastContainer');
+        const toast = document.createElement('div');
+        toast.className = `toast ${cls}`;
+        toast.innerHTML = `<span>${icons[type]||'ℹ️'}</span><span>${message}</span>`;
+        container.appendChild(toast);
+        setTimeout(() => { toast.classList.add('hide'); setTimeout(() => toast.remove(), 300); }, 3200);
+    }
+    function showGoalsMessage(msg, type) { const d = document.getElementById('goalsMessage'); d.innerHTML = `<div class="message ${type}">${msg}</div>`; setTimeout(() => d.innerHTML = '', 3000); }
+
+    // --- Questions ---
+    async function loadQuestions() {
+        try {
+            const response = await fetch(`${API_BASE}/questions/`);
+            questions = await response.json();
+            renderQuestionForm();
+        } catch (error) { console.error('Failed to load questions:', error); }
+    }
+
+    function renderQuestionForm() {
+        const container = document.getElementById('questions');
+        container.innerHTML = '';
+        questions.forEach(question => {
+            const div = document.createElement('div');
+            div.className = 'form-group';
+            let input = '';
+            if (question.question_text === 'Session Type') {
+                input = `<select id="q${question.id}" class="form-control"><option value="">Select session type</option><option value="Gi">Gi</option><option value="No Gi">No Gi</option><option value="Both">Both</option></select>`;
+            } else if (question.question_text === 'Training') {
+                input = `<select id="q${question.id}" class="form-control" onchange="showTrainingDescription(this.value)"><option value="">Select training type</option><option value="Regular Class">Regular Class</option><option value="Open Mat">Open Mat</option><option value="Competition Training">Competition Training</option><option value="Drilling Session">Drilling Session</option><option value="Private Lesson">Private Lesson</option><option value="Seminar/Workshop">Seminar/Workshop</option><option value="Light Training">Light Training</option><option value="Competition">Competition</option></select><div id="trainingDescription" style="font-size:12px;color:#8a9ba8;margin-top:5px;font-style:italic;"></div>`;
+            } else if (question.question_type === 'rating') {
+                input = `<select id="q${question.id}" class="form-control" onchange="showRPEDescription(this.value)"><option value="">Select rating</option>`;
+                for (let i = 1; i <= 9; i++) input += `<option value="${i}">${i}</option>`;
+                input += `</select><div id="rpeDescription" style="font-size:12px;color:#8a9ba8;margin-top:5px;font-style:italic;"></div>`;
+            } else if (question.question_text === 'Rounds Rolled') {
+                input = `<input type="number" id="q${question.id}" class="form-control" min="0" max="20" placeholder="Number of rounds">`;
+            } else if (question.question_text === 'Summarise this session with a few words') {
+                input = `<input type="text" id="q${question.id}" class="form-control" maxlength="100">`;
+            } else if (question.question_text === 'Journal Notes') {
+                input = `<textarea id="q${question.id}" class="form-control" rows="4" placeholder="Enter each note on a new line"></textarea>`;
+            } else if (question.question_text === 'Class Technique') {
+                input = `<div style="position:relative;"><input type="text" id="q${question.id}_position" class="form-control" placeholder="Search position/area" oninput="filterPositions(this.value,${question.id})" onfocus="showPositionDropdown(${question.id})" onblur="hidePositionDropdown(${question.id})" style="margin-bottom:10px;"><div id="positionDropdown${question.id}" class="technique-dropdown hidden"></div><select id="q${question.id}_skill" class="form-control" disabled onchange="updateTechniqueValue(${question.id})"><option value="">Select skill type</option></select><select id="q${question.id}_submission" class="form-control hidden" onchange="updateTechniqueValue(${question.id})"><option value="">Select submission</option></select><input type="hidden" id="q${question.id}" class="form-control"><input type="text" id="q${question.id}_other" class="form-control hidden" placeholder="Enter custom position/technique" style="margin-top:10px;"></div>`;
             } else {
-                otherInput.classList.add('hidden');
-                otherInput.value = '';
-                
-                if (position) {
-                    skillSelect.disabled = false;
-                    const skills = skillsByPosition[position] || defaultSkills;
-                    skills.forEach(skill => {
-                        const option = document.createElement('option');
-                        option.value = skill;
-                        option.textContent = skill;
-                        skillSelect.appendChild(option);
-                    });
-                } else {
-                    skillSelect.disabled = true;
+                input = `<textarea id="q${question.id}" class="form-control" rows="3"></textarea>`;
+            }
+            div.innerHTML = `<label>${question.question_text}:</label>${input}`;
+            container.appendChild(div);
+        });
+    }
+
+    // --- Technique Data ---
+    const allPositions = [
+        'Stand up','Wrestling','Guard Pulling','Closed Guard','High Guard','Low Guard','Cross Guard','Clamp Guard','Rubber Guard',
+        'Mission Control','Williams Guard','Double Overhook Guard','Overhook Guard','Collar-and-Sleeve Guard',
+        'Same-Side Collar-and-Sleeve Guard','Cross Collar-and-Sleeve Guard','Open Guard','Seated Guard','Supine Guard',
+        'Combat Base Guard','Feet-on-Hips Guard','Feet-on-Biceps Guard','Double Biceps Guard','Distance Guard','Spider Guard',
+        'Double Spider Guard','Lasso Guard','Reverse Lasso Guard','Spider–Lasso Guard','Cross Spider Guard','Pistol Grip Guard',
+        'Sleeve Guard','De La Riva Guard','Shallow De La Riva','Deep De La Riva','Reverse De La Riva','De La Riva X',
+        'De La Riva Sit-Up Guard','X-Guard','Shallow X-Guard','Modified X-Guard','Cross X-Guard','Reverse X-Guard','70/30 Guard',
+        'Standing X-Guard','Butterfly Guard','Double Butterfly Guard','Half Butterfly Guard','Butterfly Half Guard',
+        'Seated Butterfly Guard','Underhook Butterfly Guard','Overhook Butterfly Guard','Half Guard','Knee Shield Half Guard',
+        'Z-Guard','Half Guard with Underhook','Half Guard with Overhook','Deep Half Guard','Coyote Half Guard','Lockdown',
+        'Electric Chair','Old School Half Guard','Half Guard Sit-Up','Worm Guard','Squid Guard','Reverse Squid Guard',
+        'Ringworm Guard','Gubber Guard','Lapel De La Riva','Lapel Half Guard','Lapel Closed Guard','Lapel X-Guard',
+        'Lapel Spider Guard','Ashi Garami','Single-Leg X','Cross Ashi','Outside Ashi','Inside Ashi','Saddle','Honey Hole',
+        '411','50/50 Guard','80/20 Guard','Cross 50/50','Turtle Guard','Sit-Out Turtle','Granby Guard','Inverted Guard',
+        'Tornado Guard','Rolling Turtle','K-Guard','Matrix Guard','Crab Ride','Berimbolo','Reverse Guard','Leg Weave Guard',
+        'Shin-to-Shin Guard','Seated Shin-to-Shin','Octopus Guard','Panda Guard','Mount','High Mount','Low Mount','S-Mount',
+        'Side Control','Kesa Gatame','Reverse Kesa Gatame','North–South','Knee on Belly','Back Control','Back Mount',
+        'Body Triangle','Twister Control','Headquarters Position','Leg Drag Position','Smash Pass Position',
+        'Over-Under Position','Float Passing Position','Chest-to-Chest Half Guard','Split Squat Passing Base','Other'
+    ];
+    const skillsByPosition = { 'Other': ['Custom Entry'] };
+    const defaultSkills = ['Attacks/Submissions','Sweeps','Escapes','Defense','Setups','Transitions','Guard Passing'];
+    const submissionTypes = [
+        'Armbar','Straight Armbar','Juji Gatame','Arm Crush','Americana','Keylock','Kimura','Reverse Kimura',
+        'Kimura Trap Finish','Monoplata','Omoplata','Reverse Omoplata','Tarikoplata','Mir Lock','Shoulder Lock',
+        'Scissor Choke','Triangle Choke','Front Triangle','Reverse Triangle','Side Triangle','Flying Triangle',
+        'Arm Triangle Choke','Head-and-Arm Choke','Kata Gatame',"D'Arce Choke",'Brabo Choke','Anaconda Choke',
+        'North–South Choke','Guillotine Choke','High-Elbow Guillotine','Arm-In Guillotine','Low-Elbow Guillotine',
+        'Power Guillotine','Peruvian Necktie','Japanese Necktie','Bulldog Choke','Rear Naked Choke','Mata Leão',
+        'Short Choke','Bow and Arrow Choke','Cross Collar Choke','Single Collar Choke','Loop Choke','Clock Choke',
+        'Baseball Bat Choke','Ezekiel Choke','Modified Ezekiel','Paper Cutter Choke','Lapels Choke',
+        'Sliding Collar Choke','X-Choke','Palm-to-Palm Choke','Gogoplata','Reverse Gogoplata','Von Flue Choke',
+        'Punch Choke','Neck Crank','Can Opener','Twister','Cervical Crank','Spine Crank','Straight Ankle Lock',
+        'Ankle Lock','Achilles Lock','Heel Hook','Inside Heel Hook','Outside Heel Hook','Toe Hold','Kneebar',
+        'Calf Slicer','Calf Crusher','Bicep Slicer','Arm Slicer','Wrist Lock'
+    ];
+
+    function showPositionDropdown(qId) {
+        const dd = document.getElementById(`positionDropdown${qId}`);
+        if (dd) { populatePositionDropdown(qId, allPositions); dd.classList.remove('hidden'); }
+    }
+    function hidePositionDropdown(qId) { setTimeout(() => { const dd = document.getElementById(`positionDropdown${qId}`); if (dd) dd.classList.add('hidden'); }, 200); }
+    function filterPositions(value, qId) { populatePositionDropdown(qId, allPositions.filter(p => p.toLowerCase().includes(value.toLowerCase()))); }
+    function populatePositionDropdown(qId, list) {
+        const dd = document.getElementById(`positionDropdown${qId}`);
+        if (!dd) return;
+        dd.innerHTML = '';
+        list.forEach(pos => { const o = document.createElement('div'); o.className = 'technique-option'; o.textContent = pos; o.onclick = () => selectPosition(qId, pos); dd.appendChild(o); });
+    }
+    function selectPosition(qId, position) {
+        document.getElementById(`q${qId}_position`).value = position;
+        document.getElementById(`positionDropdown${qId}`).classList.add('hidden');
+        updateSkillOptions(qId);
+    }
+    function updateSkillOptions(qId) {
+        const posInput = document.getElementById(`q${qId}_position`);
+        const skillSel = document.getElementById(`q${qId}_skill`);
+        const subSel = document.getElementById(`q${qId}_submission`);
+        const otherInput = document.getElementById(`q${qId}_other`);
+        const position = posInput.value;
+        skillSel.innerHTML = '<option value="">Select skill type</option>';
+        subSel.classList.add('hidden');
+        subSel.innerHTML = '<option value="">Select submission</option>';
+        if (position === 'Other') { skillSel.disabled = true; otherInput.classList.remove('hidden'); otherInput.focus(); }
+        else { otherInput.classList.add('hidden'); otherInput.value = '';
+            if (position) { skillSel.disabled = false; (skillsByPosition[position] || defaultSkills).forEach(s => { const o = document.createElement('option'); o.value = s; o.textContent = s; skillSel.appendChild(o); }); }
+            else skillSel.disabled = true;
+        }
+        updateTechniqueValue(qId);
+    }
+    function updateTechniqueValue(qId) {
+        const pos = document.getElementById(`q${qId}_position`).value;
+        const skill = document.getElementById(`q${qId}_skill`).value;
+        const subSel = document.getElementById(`q${qId}_submission`);
+        const hidden = document.getElementById(`q${qId}`);
+        const other = document.getElementById(`q${qId}_other`).value;
+        if (skill === 'Attacks/Submissions') {
+            subSel.classList.remove('hidden');
+            if (subSel.options.length <= 1) submissionTypes.forEach(s => { const o = document.createElement('option'); o.value = s; o.textContent = s; subSel.appendChild(o); });
+        } else { subSel.classList.add('hidden'); subSel.innerHTML = '<option value="">Select submission</option>'; }
+        const sub = subSel.value;
+        if (pos === 'Other' && other) hidden.value = other;
+        else if (pos && skill === 'Attacks/Submissions' && sub) hidden.value = `${pos} - ${sub}`;
+        else if (pos && skill) hidden.value = `${pos} - ${skill}`;
+        else hidden.value = '';
+    }
+    function showRPEDescription(val) {
+        const d = { '1':'Light stretching or warm-up','2':'Easy drilling, no resistance','3':'Moderate drilling with some resistance','4':'Light rolling, controlled pace','5':'Normal rolling intensity','6':'Hard rolling, competitive pace','7':'Very intense rolling, pushing limits','8':'Competition-level intensity','9':'All-out effort, championship finals' };
+        const el = document.getElementById('rpeDescription'); if (el) el.textContent = d[val] || '';
+    }
+    function showTrainingDescription(val) {
+        const d = { 'Regular Class':'Structured class with warm-up, technique, and rolling','Open Mat':'Free training time for drilling and rolling','Competition Training':'High-intensity preparation for tournaments','Drilling Session':'Focused repetition of specific techniques','Private Lesson':'One-on-one instruction with coach','Seminar/Workshop':'Special technique session or guest instructor','Light Training':'Easy session for recovery or injury management','Competition':'Tournament or competition day' };
+        const el = document.getElementById('trainingDescription'); if (el) el.textContent = d[val] || '';
+    }
+
+    // --- Save Entry ---
+    async function saveEntry() {
+        const entryDate = document.getElementById('entryDate').value;
+        if (!entryDate) { showMessage('Please select a date', 'error'); return; }
+        const responses = [];
+        questions.forEach(question => {
+            let value = document.getElementById(`q${question.id}`).value;
+            if (question.question_text === 'Class Technique') {
+                const posInput = document.getElementById(`q${question.id}_position`);
+                const skillSel = document.getElementById(`q${question.id}_skill`);
+                const subSel = document.getElementById(`q${question.id}_submission`);
+                const otherInput = document.getElementById(`q${question.id}_other`);
+                if (posInput && posInput.value === 'Other' && otherInput && otherInput.value) value = otherInput.value;
+                else if (posInput && skillSel && posInput.value && skillSel.value) {
+                    if (skillSel.value === 'Attacks/Submissions' && subSel && subSel.value) value = `${posInput.value} - ${subSel.value}`;
+                    else value = `${posInput.value} - ${skillSel.value}`;
                 }
             }
-            
-            // Update hidden input
-            updateTechniqueValue(questionId);
-        }
-        
-        function updateTechniqueValue(questionId) {
-            const positionInput = document.getElementById(`q${questionId}_position`);
-            const skillSelect = document.getElementById(`q${questionId}_skill`);
-            const submissionSelect = document.getElementById(`q${questionId}_submission`);
-            const hiddenInput = document.getElementById(`q${questionId}`);
-            const otherInput = document.getElementById(`q${questionId}_other`);
-            
-            const position = positionInput.value;
-            const skill = skillSelect.value;
-            const submission = submissionSelect.value;
-            const otherValue = otherInput.value;
-            
-            // Show submission dropdown if Attacks/Submissions is selected
-            if (skill === 'Attacks/Submissions') {
-                submissionSelect.classList.remove('hidden');
-                submissionTypes.forEach(sub => {
-                    const option = document.createElement('option');
-                    option.value = sub;
-                    option.textContent = sub;
-                    submissionSelect.appendChild(option);
-                });
+            if (value) responses.push({ question_id: question.id, answer: value });
+        });
+        const entryData = { date: new Date(entryDate + 'T12:00:00').toISOString(), session_type: 'training', responses };
+        try {
+            let response;
+            if (editingEntry) {
+                response = await fetch(`${API_BASE}/entries/${editingEntry.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(entryData) });
             } else {
-                submissionSelect.classList.add('hidden');
-                submissionSelect.innerHTML = '<option value="">Select submission</option>';
+                response = await fetch(`${API_BASE}/entries/`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(entryData) });
             }
-            
-            if (position === 'Other' && otherValue) {
-                hiddenInput.value = otherValue;
-            } else if (position && skill && skill === 'Attacks/Submissions' && submission) {
-                hiddenInput.value = `${position} - ${submission}`;
-            } else if (position && skill) {
-                hiddenInput.value = `${position} - ${skill}`;
-            } else {
-                hiddenInput.value = '';
-            }
-        }
-        
-        function showRPEDescription(value) {
-            const descriptions = {
-                '1': 'Light stretching or warm-up',
-                '2': 'Easy drilling, no resistance',
-                '3': 'Moderate drilling with some resistance',
-                '4': 'Light rolling, controlled pace',
-                '5': 'Normal rolling intensity',
-                '6': 'Hard rolling, competitive pace',
-                '7': 'Very intense rolling, pushing limits',
-                '8': 'Competition-level intensity',
-                '9': 'All-out effort, championship finals'
-            };
-            
-            const descDiv = document.getElementById('rpeDescription');
-            if (descDiv) {
-                descDiv.textContent = descriptions[value] || '';
-            }
-        }
-        
-        function showTrainingDescription(value) {
-            const descriptions = {
-                'Regular Class': 'Structured class with warm-up, technique, and rolling',
-                'Open Mat': 'Free training time for drilling and rolling',
-                'Competition Training': 'High-intensity preparation for tournaments',
-                'Drilling Session': 'Focused repetition of specific techniques',
-                'Private Lesson': 'One-on-one instruction with coach',
-                'Seminar/Workshop': 'Special technique session or guest instructor',
-                'Light Training': 'Easy session for recovery or injury management',
-                'Competition': 'Tournament or competition day'
-            };
-            
-            const descDiv = document.getElementById('trainingDescription');
-            if (descDiv) {
-                descDiv.textContent = descriptions[value] || '';
-            }
-        }
-        
-        function showDashboard() {
-            document.getElementById('dashboard').classList.remove('hidden');
-            document.getElementById('activitiesSection').classList.add('hidden');
-            document.getElementById('entryForm').classList.add('hidden');
-            document.getElementById('profileSection').classList.add('hidden');
-        }
-        
-        function showEntries() {
-            document.getElementById('dashboard').classList.add('hidden');
-            document.getElementById('activitiesSection').classList.remove('hidden');
-            document.getElementById('entryForm').classList.add('hidden');
-            document.getElementById('profileSection').classList.add('hidden');
-            loadEntries();
-        }
-        
-        function showProfile() {
-            document.getElementById('dashboard').classList.add('hidden');
-            document.getElementById('activitiesSection').classList.add('hidden');
-            document.getElementById('entryForm').classList.add('hidden');
-            document.getElementById('profileSection').classList.remove('hidden');
-            loadProfile();
-        }
+            if (response.ok) {
+                const wasEditing = editingEntry !== null; editingEntry = null;
+                document.getElementById('entryForm').classList.add('hidden');
+                await loadDashboard(); await loadRecommendations(); showDashboard();
+                showMessage(wasEditing ? 'Entry updated!' : 'Entry saved!', 'success');
+            } else showMessage('Failed to save entry', 'error');
+        } catch(e) { showMessage('Connection error', 'error'); }
+    }
 
-        let currentPage = 1;
-        const entriesPerPage = 10;
-        let allEntries = [];
+    // --- Dashboard ---
+    async function loadDashboard() {
+        try {
+            const period = document.getElementById('periodFilter')?.value || '30d';
+            const response = await fetch(`${API_BASE}/analytics/dashboard?period=${period}`, { headers: { 'Authorization': `Bearer ${token}` } });
+            if (response.ok) { dashboardData = await response.json(); renderDashboard(); }
+            else { document.getElementById('dashboardStats').innerHTML = '<div style="text-align:center;color:#ff6b6b;padding:20px;">Failed to load dashboard</div>'; }
+        } catch(e) { document.getElementById('dashboardStats').innerHTML = '<div style="text-align:center;color:#ff6b6b;padding:20px;">Connection error</div>'; }
+    }
+    function filterDashboard() { loadDashboard(); }
 
-        async function loadEntries() {
-            try {
-                const response = await fetch(`${API_BASE}/entries/`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                
-                if (response.ok) {
-                    allEntries = await response.json();
-                    // Sort entries by date (most recent first), then by created_at for same dates
-                    allEntries.sort((a, b) => {
-                        const dateA = new Date(a.date);
-                        const dateB = new Date(b.date);
-                        if (dateA.getTime() === dateB.getTime()) {
-                            return new Date(b.created_at) - new Date(a.created_at);
-                        }
-                        return dateB - dateA;
-                    });
-                    currentPage = 1;
-                    renderEntries();
-                }
-            } catch (error) {
-                console.error('Failed to load entries:', error);
+    function renderDashboard() {
+        if (!dashboardData) return;
+        document.getElementById('dashboardStats').innerHTML = `
+            <div class="stat-item"><div class="stat-label">Total Sessions</div><div class="stat-value">${dashboardData.total_sessions}</div></div>
+            <div class="stat-item"><div class="stat-label">Average RPE</div><div class="stat-value">${dashboardData.avg_rpe}/9</div></div>
+            <div class="stat-item"><div class="stat-label">Total Rounds</div><div class="stat-value">${dashboardData.total_rounds}</div></div>
+        `;
+        renderCharts();
+    }
+
+    function renderCharts() {
+        const c = document.getElementById('dashboardCharts');
+        let html = '';
+        // Session Types
+        if (Object.keys(dashboardData.session_types).length > 0) {
+            html += '<div class="card" style="margin-bottom:12px;"><div class="card-header"><h4 class="card-title">Session Types</h4></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">';
+            for (const [type, count] of Object.entries(dashboardData.session_types)) {
+                const pct = ((count / dashboardData.total_sessions) * 100).toFixed(1);
+                html += `<div class="stat-item"><div class="stat-label">${type}</div><div class="stat-value">${count}</div><div style="font-size:11px;color:#8a9ba8;margin-top:3px;">${pct}%</div></div>`;
             }
+            html += '</div></div>';
         }
-
-        function renderEntries() {
-            const container = document.getElementById('entriesList');
-            const startIndex = (currentPage - 1) * entriesPerPage;
-            const endIndex = startIndex + entriesPerPage;
-            const pageEntries = allEntries.slice(startIndex, endIndex);
-            const totalPages = Math.ceil(allEntries.length / entriesPerPage);
-            
-            container.innerHTML = '';
-            
-            // Add pagination info
-            if (allEntries.length > 0) {
-                const paginationInfo = document.createElement('div');
-                paginationInfo.style.cssText = 'text-align: center; margin-bottom: 20px; color: #8a9ba8; font-size: 14px;';
-                paginationInfo.innerHTML = `Showing ${startIndex + 1}-${Math.min(endIndex, allEntries.length)} of ${allEntries.length} entries`;
-                container.appendChild(paginationInfo);
-            }
-            
-            pageEntries.forEach(entry => {
-                const div = document.createElement('div');
-                div.className = 'card activity-card';
-                
-                const entryDate = new Date(entry.date);
-                const day = String(entryDate.getDate()).padStart(2, '0');
-                const month = String(entryDate.getMonth() + 1).padStart(2, '0');
-                const year = String(entryDate.getFullYear()).slice(-2);
-                const formattedDate = `${day}/${month}/${year}`;
-                
-                let html = `
-                    <div style="position: relative;">
-                        <div style="position: absolute; top: 0; right: 0; display: flex; gap: 8px;">
-                            <button onclick="editEntry(${entry.id})" class="edit-btn">Edit</button>
-                            <button onclick="deleteEntry(${entry.id})" class="edit-btn" style="border-color: #ff6b6b; color: #ff6b6b;">Delete</button>
-                        </div>
-                        <div class="activity-date">${formattedDate}</div>
-                        <h4 style="margin: 5px 0 15px 0; color: #ffffff;">BJJ Training Session</h4>
-                    </div>
-                    <div>
-                `;
-                
-                entry.responses.forEach(response => {
-                    if (response.answer.trim()) {
-                        let displayAnswer = response.answer;
-                        if (response.question.question_text === 'Journal Notes') {
-                            const lines = response.answer.split('\n').filter(line => line.trim());
-                            displayAnswer = lines.map(line => `• ${line.trim()}`).join('<br>');
-                        }
-                        html += `
-                            <div class="response-item">
-                                <div class="response-question">${response.question.question_text}</div>
-                                <div class="response-answer">${displayAnswer}</div>
-                            </div>
-                        `;
-                    }
-                });
-                
-                html += `</div>`;
-                div.innerHTML = html;
-                container.appendChild(div);
+        // Training Types
+        if (Object.keys(dashboardData.training_types).length > 0) {
+            html += '<div class="card" style="margin-bottom:12px;"><div class="card-header"><h4 class="card-title">Training Types</h4></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">';
+            Object.entries(dashboardData.training_types).sort(([,a],[,b]) => b - a).forEach(([type, count]) => {
+                const pct = ((count / dashboardData.total_sessions) * 100).toFixed(1);
+                html += `<div class="stat-item"><div class="stat-label">${type}</div><div class="stat-value">${count}</div><div style="font-size:11px;color:#8a9ba8;margin-top:3px;">${pct}%</div></div>`;
             });
-            
-            // Add pagination controls
-            if (totalPages > 1) {
-                const paginationDiv = document.createElement('div');
-                paginationDiv.style.cssText = 'display: flex; justify-content: center; align-items: center; gap: 10px; margin-top: 20px;';
-                
-                let paginationHTML = '';
-                
-                // Previous button
-                if (currentPage > 1) {
-                    paginationHTML += `<button onclick="changePage(${currentPage - 1})" class="btn btn-secondary" style="padding: 8px 12px; font-size: 12px;">← Previous</button>`;
-                }
-                
-                // Page numbers
-                const startPage = Math.max(1, currentPage - 2);
-                const endPage = Math.min(totalPages, currentPage + 2);
-                
-                for (let i = startPage; i <= endPage; i++) {
-                    const isActive = i === currentPage;
-                    paginationHTML += `<button onclick="changePage(${i})" class="btn ${isActive ? '' : 'btn-secondary'}" style="padding: 8px 12px; font-size: 12px; ${isActive ? 'background: #00d4aa; color: #0f1419;' : ''}">${i}</button>`;
-                }
-                
-                // Next button
-                if (currentPage < totalPages) {
-                    paginationHTML += `<button onclick="changePage(${currentPage + 1})" class="btn btn-secondary" style="padding: 8px 12px; font-size: 12px;">Next →</button>`;
-                }
-                
-                paginationDiv.innerHTML = paginationHTML;
-                container.appendChild(paginationDiv);
-            }
+            html += '</div></div>';
         }
-        
-        function changePage(page) {
-            currentPage = page;
-            renderEntries();
-            // Scroll to top of activities section
-            document.getElementById('activitiesSection').scrollIntoView({ behavior: 'smooth' });
+        // Positions - pie chart
+        if (dashboardData.positions && Object.keys(dashboardData.positions).length > 0) {
+            const sorted = Object.entries(dashboardData.positions).sort(([,a],[,b]) => b - a).slice(0, 8);
+            html += renderPieChart('Most Trained Positions', sorted, 'positions');
         }
+        // Submissions - pie chart
+        if (dashboardData.submissions && Object.keys(dashboardData.submissions).length > 0) {
+            const sorted = Object.entries(dashboardData.submissions).sort(([,a],[,b]) => b - a).slice(0, 8);
+            html += renderPieChart('Submission Types', sorted, 'submissions');
+        }
+        c.innerHTML = html;
+        renderAdvancedCharts();
+    }
 
-        function toggleEntryForm() {
-            // First switch to activities section
-            document.getElementById('dashboard').classList.add('hidden');
-            document.getElementById('activitiesSection').classList.remove('hidden');
-            
-            const form = document.getElementById('entryForm');
-            form.classList.remove('hidden');
-            
-            if (!editingEntry) {
-                const today = new Date().toISOString().split('T')[0];
-                document.getElementById('entryDate').value = today;
-                document.getElementById('formTitle').textContent = 'New Training Entry';
-                
-                questions.forEach(question => {
-                    document.getElementById(`q${question.id}`).value = '';
-                });
-            }
-        }
+    function renderPieChart(title, data, type) {
+        const colors = ['#e67e22','#3498db','#f39c12','#9b59b6','#1abc9c','#34495e','#e74c3c','#95a5a6'];
+        const chartId = `pie_${type}_${Date.now()}`;
+        const total = data.reduce((sum,[,count]) => sum + count, 0);
+        let angle = -90, cx = 100, cy = 100, r = 80, paths = '', legend = '';
+        data.forEach(([name, count], i) => {
+            const pct = (count / total) * 100, slice = (count / total) * 360, end = angle + slice;
+            const x1 = cx + r * Math.cos(angle * Math.PI / 180), y1 = cy + r * Math.sin(angle * Math.PI / 180);
+            const x2 = cx + r * Math.cos(end * Math.PI / 180), y2 = cy + r * Math.sin(end * Math.PI / 180);
+            const large = slice > 180 ? 1 : 0;
+            paths += `<path d="M ${cx} ${cy} L ${x1} ${y1} A ${r} ${r} 0 ${large} 1 ${x2} ${y2} Z" fill="${colors[i % colors.length]}" stroke="#1a1f26" stroke-width="2" style="cursor:pointer;" onclick="showPieSliceInfo('${name.replace(/'/g,"\\'")}',${count},${pct.toFixed(1)})" />`;
+            legend += `<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;"><div style="width:12px;height:12px;background:${colors[i % colors.length]};border-radius:2px;flex-shrink:0;"></div><div style="font-size:12px;color:#f1f5f9;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${name}</div><div style="font-size:12px;color:#8a9ba8;font-weight:600;">${count} (${pct.toFixed(1)}%)</div></div>`;
+            angle = end;
+        });
+        return `<div class="card" style="margin-bottom:12px;"><div class="card-header"><h4 class="card-title">${title}</h4></div><div style="padding:12px;"><div id="${chartId}_info" style="text-align:center;min-height:40px;margin-bottom:10px;padding:10px;background:#252b34;border-radius:6px;display:none;"><div style="font-size:14px;color:#00d4aa;font-weight:600;" id="${chartId}_name"></div><div style="font-size:12px;color:#8a9ba8;margin-top:4px;" id="${chartId}_details"></div></div><svg viewBox="0 0 200 200" style="width:100%;max-width:220px;margin:0 auto;display:block;">${paths}</svg><div style="margin-top:15px;">${legend}</div></div></div>`;
+    }
 
-        async function editEntry(entryId) {
-            try {
-                const response = await fetch(`${API_BASE}/entries/${entryId}`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                
-                if (response.ok) {
-                    const entry = await response.json();
-                    editingEntry = entry;
-                    
-                    // Hide all sections and show edit page
-                    document.getElementById('dashboard').classList.add('hidden');
-                    document.getElementById('activitiesSection').classList.add('hidden');
-                    document.getElementById('profileSection').classList.add('hidden');
-                    document.getElementById('entryForm').classList.remove('hidden');
-                    document.getElementById('formTitle').textContent = 'Edit Training Entry';
-                    
-                    const entryDate = new Date(entry.date);
-                    const year = entryDate.getFullYear();
-                    const month = String(entryDate.getMonth() + 1).padStart(2, '0');
-                    const day = String(entryDate.getDate()).padStart(2, '0');
-                    const dateString = `${year}-${month}-${day}`;
-                    document.getElementById('entryDate').value = dateString;
-                    
-                    setTimeout(() => {
-                        entry.responses.forEach(response => {
-                            const element = document.getElementById(`q${response.question_id}`);
-                            if (element) {
-                                element.value = response.answer;
-                                if (element.tagName === 'SELECT') {
-                                    element.dispatchEvent(new Event('change'));
-                                }
-                            }
-                            
-                            // Handle Class Technique dropdown specially
-                            const question = questions.find(q => q.id === response.question_id);
-                            if (question && question.question_text === 'Class Technique' && response.answer.includes(' - ')) {
-                                const [position, skill] = response.answer.split(' - ');
-                                const positionInput = document.getElementById(`q${response.question_id}_position`);
-                                const skillSelect = document.getElementById(`q${response.question_id}_skill`);
-                                
-                                if (positionInput) {
-                                    positionInput.value = position;
-                                    updateSkillOptions(response.question_id);
-                                    
-                                    setTimeout(() => {
-                                        if (skillSelect) {
-                                            skillSelect.value = skill;
-                                            updateTechniqueValue(response.question_id);
-                                        }
-                                    }, 100);
-                                }
-                            }
-                        });
-                    }, 200);
+    function showPieSliceInfo(name, count, pct) {
+        document.querySelectorAll('[id$="_info"]').forEach(box => {
+            const n = box.querySelector('[id$="_name"]'), d = box.querySelector('[id$="_details"]');
+            if (n && d) { n.textContent = name; d.textContent = `${count} sessions (${pct}%)`; box.style.display = 'block'; }
+        });
+    }
+
+    function renderAdvancedCharts() {
+        const c = document.getElementById('dashboardCharts');
+        let html = '';
+        // RPE Trend
+        if (dashboardData.rpe_trend && dashboardData.rpe_trend.length > 0) {
+            const displayData = dashboardData.rpe_trend.slice(-7);
+            html += '<div class="card" style="margin-bottom:12px;"><div class="card-header"><h4 class="card-title">RPE Trend (Last 7)</h4></div><div style="padding:12px;background:#252b34;border-radius:8px;margin:12px 0;"><div style="display:flex;justify-content:space-between;align-items:end;height:100px;border-bottom:1px solid #3a4048;padding-bottom:12px;">';
+            const maxRpe = Math.max(...displayData.map(d => d.rpe));
+            displayData.forEach(data => {
+                const h = (data.rpe / maxRpe) * 80;
+                const dateDisp = data.date.split('/').slice(0, 2).join('/');
+                const col = data.rpe <= 3 ? '#86efac' : data.rpe <= 6 ? '#fde047' : '#fca5a5';
+                html += `<div style="display:flex;flex-direction:column;align-items:center;flex:1;"><div style="font-size:11px;color:${col};font-weight:600;margin-bottom:5px;">${data.rpe}</div><div style="width:4px;background:${col};height:${h}px;margin-bottom:8px;border-radius:3px;"></div><div style="font-size:9px;color:#8a9ba8;white-space:nowrap;">${dateDisp}</div></div>`;
+            });
+            html += '</div></div></div>';
+        }
+        // Training Volume
+        if (dashboardData.weekly_volume && dashboardData.weekly_volume.length > 0) {
+            html += '<div class="card" style="margin-bottom:12px;"><div class="card-header"><h4 class="card-title">Training Volume</h4></div><div style="padding:12px;">';
+            dashboardData.weekly_volume.forEach(data => {
+                html += `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px;background:#252b34;border-radius:6px;margin-bottom:8px;"><div><div style="font-size:12px;color:#f1f5f9;font-weight:600;">${data.date_range}</div><div style="font-size:11px;color:#8a9ba8;margin-top:2px;">${data.sessions} sessions</div></div><div style="font-size:16px;color:#00d4aa;font-weight:600;">${data.rounds} rounds</div></div>`;
+            });
+            html += '</div></div>';
+        }
+        // Rounds by Session Type
+        if (dashboardData.rounds_by_session_type && Object.keys(dashboardData.rounds_by_session_type).length > 0) {
+            html += '<div class="card" style="margin-bottom:12px;"><div class="card-header"><h4 class="card-title">Rounds by Session Type</h4></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:12px;">';
+            Object.entries(dashboardData.rounds_by_session_type).forEach(([type, rounds]) => {
+                html += `<div class="stat-item"><div class="stat-label">${type}</div><div class="stat-value">${rounds}</div></div>`;
+            });
+            html += '</div></div>';
+        }
+        c.innerHTML += html;
+    }
+
+    // --- Entries ---
+    let currentPage = 1;
+    const entriesPerPage = 10;
+    let allEntries = [];
+
+    async function loadEntries() {
+        try {
+            const response = await fetch(`${API_BASE}/entries/`, { headers: { 'Authorization': `Bearer ${token}` } });
+            if (response.ok) {
+                allEntries = await response.json();
+                allEntries.sort((a, b) => { const da = new Date(a.date), db = new Date(b.date); if (da.getTime() === db.getTime()) return new Date(b.created_at) - new Date(a.created_at); return db - da; });
+                currentPage = 1;
+                renderEntries();
+            }
+        } catch(e) { console.error('Failed to load entries:', e); }
+    }
+
+    function renderEntries() {
+        const container = document.getElementById('entriesList');
+        const start = (currentPage - 1) * entriesPerPage, end = start + entriesPerPage;
+        const pageEntries = allEntries.slice(start, end);
+        const totalPages = Math.ceil(allEntries.length / entriesPerPage);
+        container.innerHTML = '';
+        if (allEntries.length === 0) { container.innerHTML = '<div style="text-align:center;padding:40px;color:#8a9ba8;"><div style="font-size:36px;margin-bottom:12px;">🥋</div><div style="font-size:15px;">No sessions logged yet</div><div style="font-size:13px;margin-top:8px;">Hit "+ New" to log your first session.</div></div>'; return; }
+        if (allEntries.length > 0) { const info = document.createElement('div'); info.style.cssText = 'text-align:center;margin-bottom:15px;color:#8a9ba8;font-size:13px;'; info.innerHTML = `Showing ${start+1}-${Math.min(end, allEntries.length)} of ${allEntries.length} entries`; container.appendChild(info); }
+        pageEntries.forEach(entry => {
+            const div = document.createElement('div');
+            const rpeResp = entry.responses.find(r => r.question && r.question.question_text.includes('Rate of Perceived Exertion'));
+            const rpe = rpeResp ? parseInt(rpeResp.answer) : null;
+            const borderColor = rpe === null ? '#00d4aa' : rpe <= 3 ? '#22c55e' : rpe <= 6 ? '#eab308' : '#ff6b6b';
+            div.className = 'card activity-card section-fade';
+            div.style.borderTop = `4px solid ${borderColor}`;
+            const d = new Date(entry.date);
+            const fmtDate = `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getFullYear()).slice(-2)}`;
+            let html = `<div style="position:relative;"><div style="position:absolute;top:0;right:0;display:flex;gap:8px;"><button onclick="editEntry(${entry.id})" class="edit-btn">Edit</button><button onclick="deleteEntry(${entry.id})" class="edit-btn" style="border-color:#ff6b6b;color:#ff6b6b;">Delete</button></div><div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;"><div style="font-size:14px;font-weight:700;color:#00d4aa;">${fmtDate}</div><span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:rgba(0,212,170,0.15);color:#00d4aa;text-transform:uppercase;letter-spacing:0.6px;">${entry.session_type}</span></div><h4 style="margin:0 0 12px 0;color:#f1f5f9;font-size:14px;">BJJ Training Session</h4></div><div style="margin-top:8px;">`;
+            entry.responses.forEach(resp => {
+                if (resp.answer.trim()) {
+                    let display = resp.answer;
+                    if (resp.question.question_text === 'Journal Notes') { display = resp.answer.split('\n').filter(l => l.trim()).map(l => `• ${l.trim()}`).join('<br>'); }
+                    if (resp.question.question_text.includes('Rate of Perceived Exertion')) {
+                        const r = parseInt(resp.answer), cls = r <= 3 ? 'rpe-low' : r <= 6 ? 'rpe-medium' : 'rpe-high', emoji = r <= 3 ? '🟢' : r <= 6 ? '🟡' : '🔴';
+                        display = `<span class="rpe-badge ${cls}">${emoji} ${r}/9</span>`;
+                    }
+                    html += `<div style="margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid #2a3038;"><div class="stat-label">${resp.question.question_text}</div><div style="color:#f1f5f9;margin-top:4px;font-weight:500;font-size:13px;">${display}</div></div>`;
                 }
-            } catch (error) {
-                showMessage('Failed to load entry', 'error');
-            }
+            });
+            html += '</div>';
+            div.innerHTML = html;
+            container.appendChild(div);
+        });
+        // Pagination
+        if (totalPages > 1) {
+            const pgDiv = document.createElement('div');
+            pgDiv.style.cssText = 'display:flex;justify-content:center;align-items:center;gap:10px;margin-top:20px;flex-wrap:wrap;';
+            let pgHTML = '';
+            if (currentPage > 1) pgHTML += `<button onclick="changePage(${currentPage-1})" class="btn btn-secondary" style="padding:8px 14px;font-size:12px;">← Prev</button>`;
+            const sp = Math.max(1, currentPage - 2), ep = Math.min(totalPages, currentPage + 2);
+            for (let i = sp; i <= ep; i++) pgHTML += `<button onclick="changePage(${i})" class="btn ${i === currentPage ? '' : 'btn-secondary'}" style="padding:8px 14px;font-size:12px;${i === currentPage ? 'background:#00d4aa;color:#0f1419;' : ''}">${i}</button>`;
+            if (currentPage < totalPages) pgHTML += `<button onclick="changePage(${currentPage+1})" class="btn btn-secondary" style="padding:8px 14px;font-size:12px;">Next →</button>`;
+            pgDiv.innerHTML = pgHTML;
+            container.appendChild(pgDiv);
         }
+    }
+    function changePage(page) { currentPage = page; renderEntries(); document.getElementById('activitiesSection').scrollIntoView({ behavior: 'smooth' }); }
 
-        async function deleteEntry(entryId) {
-            if (!confirm('Are you sure you want to delete this training entry?')) {
-                return;
-            }
-            
-            try {
-                const response = await fetch(`${API_BASE}/entries/${entryId}`, {
-                    method: 'DELETE',
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                
-                if (response.ok) {
-                    showMessage('Entry deleted successfully!', 'success');
-                    loadEntries();
-                    loadDashboard(); // Refresh dashboard stats
-                } else {
-                    showMessage('Failed to delete entry', 'error');
-                }
-            } catch (error) {
-                showMessage('Connection error', 'error');
-            }
-        }
-
-        function cancelEdit() {
-            editingEntry = null;
+    // --- Entry Form ---
+    function toggleEntryForm() {
+        document.getElementById('dashboard').classList.add('hidden');
+        document.getElementById('activitiesSection').classList.add('hidden');
+        document.getElementById('profileSection').classList.add('hidden');
+        const form = document.getElementById('entryForm');
+        form.classList.remove('hidden');
+        if (!editingEntry) {
+            document.getElementById('entryDate').value = new Date().toISOString().split('T')[0];
             document.getElementById('formTitle').textContent = 'New Training Entry';
-            document.getElementById('entryForm').classList.add('hidden');
-            showDashboard();
+            questions.forEach(q => { const el = document.getElementById(`q${q.id}`); if (el) el.value = ''; });
         }
+    }
 
-        function showMessage(message, type) {
-            const messageDiv = document.getElementById('authMessage');
-            messageDiv.innerHTML = `<div class="message ${type}">${message}</div>`;
-            setTimeout(() => messageDiv.innerHTML = '', 3000);
-        }
+    async function editEntry(entryId) {
+        try {
+            const response = await fetch(`${API_BASE}/entries/${entryId}`, { headers: { 'Authorization': `Bearer ${token}` } });
+            if (response.ok) {
+                const entry = await response.json();
+                editingEntry = entry;
+                document.getElementById('dashboard').classList.add('hidden');
+                document.getElementById('activitiesSection').classList.add('hidden');
+                document.getElementById('profileSection').classList.add('hidden');
+                document.getElementById('entryForm').classList.remove('hidden');
+                document.getElementById('formTitle').textContent = 'Edit Training Entry';
+                const d = new Date(entry.date);
+                document.getElementById('entryDate').value = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+                setTimeout(() => {
+                    entry.responses.forEach(resp => {
+                        const el = document.getElementById(`q${resp.question_id}`);
+                        if (el) { el.value = resp.answer; if (el.tagName === 'SELECT') el.dispatchEvent(new Event('change')); }
+                        const q = questions.find(q => q.id === resp.question_id);
+                        if (q && q.question_text === 'Class Technique' && resp.answer.includes(' - ')) {
+                            const [pos, skill] = resp.answer.split(' - ');
+                            const posInput = document.getElementById(`q${resp.question_id}_position`);
+                            if (posInput) { posInput.value = pos; updateSkillOptions(resp.question_id); setTimeout(() => { const ss = document.getElementById(`q${resp.question_id}_skill`); if (ss) { ss.value = skill; updateTechniqueValue(resp.question_id); } }, 100); }
+                        }
+                    });
+                }, 200);
+            }
+        } catch(e) { showMessage('Failed to load entry', 'error'); }
+    }
 
-        async function loadProfile() {
-            try {
-                const response = await fetch(`${API_BASE}/profile/`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                
-                if (response.ok) {
-                    const profile = await response.json();
-                    document.getElementById('profileName').value = profile.name || '';
-                    document.getElementById('profileAge').value = profile.age || '';
-                    document.getElementById('profileWeight').value = profile.weight || '';
-                    document.getElementById('profileHeight').value = profile.height || '';
-                    document.getElementById('profileBelt').value = profile.belt || '';
-                } else if (response.status === 404) {
-                    // Profile doesn't exist, show empty form
-                    clearProfileForm();
+    async function deleteEntry(entryId) {
+        if (!confirm('Delete this training entry?')) return;
+        try {
+            const response = await fetch(`${API_BASE}/entries/${entryId}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
+            if (response.ok) { showMessage('Entry deleted!', 'success'); loadEntries(); loadDashboard(); }
+            else showMessage('Failed to delete entry', 'error');
+        } catch(e) { showMessage('Connection error', 'error'); }
+    }
+
+    function cancelEdit() { editingEntry = null; document.getElementById('formTitle').textContent = 'New Training Entry'; document.getElementById('entryForm').classList.add('hidden'); showDashboard(); }
+
+    // --- Profile ---
+    async function loadProfile() {
+        try {
+            const response = await fetch(`${API_BASE}/profile/exists`, { headers: { 'Authorization': `Bearer ${token}` } });
+            if (response.ok) {
+                const data = await response.json();
+                if (data.exists) {
+                    const pr = await fetch(`${API_BASE}/profile/`, { headers: { 'Authorization': `Bearer ${token}` } });
+                    if (pr.ok) { const p = await pr.json(); document.getElementById('profileName').value = p.name || ''; document.getElementById('profileAge').value = p.age || ''; document.getElementById('profileWeight').value = p.weight || ''; document.getElementById('profileHeight').value = p.height || ''; document.getElementById('profileBelt').value = p.belt || ''; }
+                } else clearProfileForm();
+            }
+        } catch(e) { clearProfileForm(); }
+    }
+    function clearProfileForm() { ['profileName','profileAge','profileWeight','profileHeight','profileBelt'].forEach(id => document.getElementById(id).value = ''); }
+
+    async function saveProfile() {
+        const data = { name: document.getElementById('profileName').value || null, age: parseInt(document.getElementById('profileAge').value) || null, weight: parseFloat(document.getElementById('profileWeight').value) || null, height: parseFloat(document.getElementById('profileHeight').value) || null, belt: document.getElementById('profileBelt').value || null };
+        try {
+            const response = await fetch(`${API_BASE}/profile/`, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(data) });
+            if (response.ok) { showMessage('Profile saved!', 'success'); setTimeout(() => showDashboard(), 1000); }
+            else showMessage('Failed to save profile', 'error');
+        } catch(e) { showMessage('Connection error', 'error'); }
+    }
+
+    async function changePassword() {
+        const cur = document.getElementById('currentPassword').value, np = document.getElementById('newPassword').value, cp = document.getElementById('confirmPassword').value;
+        if (!cur || !np || !cp) { showMessage('Please fill in all password fields', 'error'); return; }
+        if (np !== cp) { showMessage('New passwords do not match', 'error'); return; }
+        try {
+            const response = await fetch(`${API_BASE}/auth/change-password`, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ old_password: cur, new_password: np }) });
+            if (response.ok) { showMessage('Password changed!', 'success'); document.getElementById('currentPassword').value = ''; document.getElementById('newPassword').value = ''; document.getElementById('confirmPassword').value = ''; }
+            else { const e = await response.json(); showMessage(e.detail || 'Failed to change password', 'error'); }
+        } catch(e) { showMessage('Connection error', 'error'); }
+    }
+
+    // --- Goals ---
+    async function loadGoals() {
+        try {
+            const response = await fetch(`${API_BASE}/goals/current`, { headers: { 'Authorization': `Bearer ${token}` } });
+            if (response.ok) { const g = await response.json(); document.getElementById('goalSessions').value = g.weekly_sessions_target || ''; document.getElementById('goalRounds').value = g.weekly_rounds_target || ''; }
+            else if (response.status === 404) { document.getElementById('goalSessions').value = ''; document.getElementById('goalRounds').value = ''; }
+        } catch(e) {}
+        const hideRecs = localStorage.getItem('bjj_hide_recommendations') === 'true';
+        document.getElementById('hideRecommendations').checked = hideRecs;
+    }
+
+    async function saveGoals() {
+        const st = parseInt(document.getElementById('goalSessions').value), rt = parseInt(document.getElementById('goalRounds').value);
+        if (!st) { showGoalsMessage('Please enter sessions goal', 'error'); return; }
+        try {
+            const response = await fetch(`${API_BASE}/goals/`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ weekly_sessions_target: st, weekly_rounds_target: rt || null, start_date: new Date().toISOString().split('T')[0] }) });
+            if (response.ok) showGoalsMessage('Goals updated', 'success');
+            else showGoalsMessage('Failed to save goals', 'error');
+        } catch(e) { showGoalsMessage('Connection error', 'error'); }
+    }
+
+    function toggleHideRecommendations() {
+        const checked = document.getElementById('hideRecommendations').checked;
+        localStorage.setItem('bjj_hide_recommendations', checked ? 'true' : 'false');
+        const recCard = document.getElementById('recCard');
+        if (recCard) recCard.style.display = checked ? 'none' : '';
+    }
+
+    async function loadGoalProgress() {
+        try {
+            const response = await fetch(`${API_BASE}/goals/streaks/current`, { headers: { 'Authorization': `Bearer ${token}` } });
+            if (response.ok) {
+                const data = await response.json();
+                document.getElementById('goalProgress').innerHTML = `
+                    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
+                        <div class="stat-item"><div class="stat-label">Current Streak</div><div class="stat-value">${data.current_streak} wks</div></div>
+                        <div class="stat-item"><div class="stat-label">This Week</div><div class="stat-value">${data.current_week_progress}/${data.current_week_goal}</div></div>
+                        <div class="stat-item"><div class="stat-label">Longest Streak</div><div class="stat-value">${data.longest_streak} wks</div></div>
+                    </div>`;
+                document.getElementById('currentGoalInfo').style.display = 'block';
+            }
+        } catch(e) {}
+    }
+
+    // --- Dashboard Progress ---
+    async function loadDashboardProgress() {
+        try {
+            const response = await fetch(`${API_BASE}/goals/streaks/current`, { headers: { 'Authorization': `Bearer ${token}` } });
+            if (response.ok) {
+                const data = await response.json();
+                const sPct = data.current_week_goal > 0 ? Math.min((data.current_week_progress / data.current_week_goal) * 100, 100) : 0;
+                const rPct = data.current_week_rounds_goal > 0 ? Math.min((data.current_week_rounds / data.current_week_rounds_goal) * 100, 100) : 0;
+                document.getElementById('currentProgressStats').innerHTML = `
+                    <div style="display:flex;gap:10px;margin-bottom:12px;">
+                        <div class="stat-item" style="flex:1;border-top-color:#f59e0b;"><div class="stat-label">🔥 Streak</div><div class="stat-value">${data.current_streak} <span style="font-size:12px;color:#8a9ba8;">wks</span></div></div>
+                        <div class="stat-item" style="flex:1;border-top-color:#64748b;"><div class="stat-label">🏆 Longest</div><div class="stat-value">${data.longest_streak} <span style="font-size:12px;color:#8a9ba8;">wks</span></div></div>
+                    </div>
+                    <div style="background:#252b34;padding:14px;border-radius:10px;margin-bottom:10px;border:1px solid #2a3038;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                            <div class="stat-label" style="margin:0;">Weekly Sessions</div>
+                            <div style="font-size:14px;font-weight:700;color:#f1f5f9;">${data.current_week_progress} <span style="color:#8a9ba8;">/ ${data.current_week_goal}</span></div>
+                        </div>
+                        <div style="width:100%;background:#0f1419;border-radius:10px;height:10px;overflow:hidden;">
+                            <div style="width:${sPct}%;background:linear-gradient(90deg,#00d4aa 0%,#00b894 100%);height:100%;border-radius:10px;transition:width 0.6s ease;"></div>
+                        </div>
+                        ${sPct >= 100 ? '<div class="goal-achieved" style="margin-top:8px;">🎉 Weekly sessions goal reached!</div>' : ''}
+                    </div>
+                    <div style="background:#252b34;padding:14px;border-radius:10px;border:1px solid #2a3038;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                            <div class="stat-label" style="margin:0;">Weekly Rounds</div>
+                            <div style="font-size:14px;font-weight:700;color:#f1f5f9;">${data.current_week_rounds || 0} <span style="color:#8a9ba8;">/ ${data.current_week_rounds_goal || 0}</span></div>
+                        </div>
+                        <div style="width:100%;background:#0f1419;border-radius:10px;height:10px;overflow:hidden;">
+                            <div style="width:${rPct}%;background:linear-gradient(90deg,#4ecdc4 0%,#3ab8af 100%);height:100%;border-radius:10px;transition:width 0.6s ease;"></div>
+                        </div>
+                        ${rPct >= 100 ? '<div class="goal-achieved" style="margin-top:8px;">🎉 Weekly rounds goal reached!</div>' : ''}
+                    </div>`;
+            } else {
+                document.getElementById('currentProgressStats').innerHTML = `
+                    <div style="text-align:center;padding:20px;">
+                        <div style="font-size:36px;margin-bottom:12px;">🎯</div>
+                        <div style="font-size:14px;color:#8a9ba8;margin-bottom:12px;">Set your goals to track weekly progress</div>
+                        <button onclick="showProfile();showProfileTab('goals');" class="btn" style="padding:10px 20px;font-size:13px;">Set Goals</button>
+                    </div>`;
+            }
+        } catch(e) {}
+    }
+
+    // --- Recommendations ---
+    async function loadRecommendations() {
+        const container = document.getElementById('recommendationsContainer');
+        const recCard = document.getElementById('recCard');
+        const dashboard = document.getElementById('dashboard');
+        if (!container || !recCard || !dashboard) return;
+        if (localStorage.getItem('bjj_hide_recommendations') === 'true') { recCard.style.display = 'none'; return; }
+        recCard.style.display = '';
+        function moveCardToBottom() { dashboard.appendChild(recCard); }
+        function moveCardToTop() { const first = dashboard.querySelector('.card, .rec-card'); if (first && first !== recCard) dashboard.insertBefore(recCard, first); }
+        try {
+            const response = await fetch(`${API_BASE}/recommendations/`, { headers: { 'Authorization': `Bearer ${token}` } });
+            if (!response.ok) throw new Error('Failed');
+            const data = await response.json();
+            if (data.meta && data.meta.low_data) { container.innerHTML = '<div class="rec-onboarding">📋 Log a few sessions to unlock personalised recommendations.</div>'; moveCardToBottom(); return; }
+            if (!data.recommendations || data.recommendations.length === 0) { container.innerHTML = '<div class="rec-empty">✅ No recommendations — training is balanced.</div>'; moveCardToBottom(); return; }
+            moveCardToTop();
+            let recs = [...data.recommendations];
+            if (data.meta && data.meta.active_injuries && data.meta.active_injuries.length > 0) {
+                const idx = recs.findIndex(r => r.type === 'intensity');
+                if (idx > 0) { const [ir] = recs.splice(idx, 1); recs.unshift(ir); }
+            }
+            const icons = { position: '🥋', submission: '🔒', intensity: '⚡', goal: '🎯' };
+            const priorityIcons = { high: '🚨', medium: '⚠️', low: '💡' };
+            const categoryClass = { position: 'rec-category-position', submission: 'rec-category-submission', intensity: 'rec-category-intensity', goal: 'rec-category-goal' };
+            function highlightMessage(msg) {
+                return msg.replace(/(\d+(\.\d+)?)/g, '<span class="rec-accent">$1</span>').replace(/\b([A-Z][a-z]+(?: [A-Z][a-z]+)*)\b/g, (m) => m.split(' ').length > 1 ? `<strong>${m}</strong>` : m);
+            }
+            container.innerHTML = '<div class="rec-items-row">' + recs.map(rec => `
+                <div class="rec-item rec-item-${rec.priority}">
+                    <div class="rec-item-header">
+                        <span class="rec-priority-icon">${priorityIcons[rec.priority] || '📌'}</span>
+                        <span class="rec-category-tag ${categoryClass[rec.type] || ''}">${icons[rec.type] || ''} ${rec.type}</span>
+                    </div>
+                    <div class="rec-title">${rec.title}</div>
+                    <div class="rec-message">${highlightMessage(rec.message)}</div>
+                </div>
+            `).join('') + '</div>';
+        } catch(e) { container.innerHTML = '<div class="rec-empty">Could not load recommendations.</div>'; moveCardToBottom(); }
+    }
+
+    // --- Injuries ---
+    async function checkActiveInjuries() {
+        try {
+            const response = await fetch(`${API_BASE}/injuries/active`, { headers: { 'Authorization': `Bearer ${token}` } });
+            if (response.ok) { const injuries = await response.json(); document.getElementById('injuryBanner').style.display = injuries.length > 0 ? 'flex' : 'none'; }
+        } catch(e) {}
+    }
+
+    async function markInjuryHealed() { document.getElementById('healedModal').classList.add('show'); }
+    function closeHealedModal() { document.getElementById('healedModal').classList.remove('show'); }
+
+    async function confirmHealedInjury() {
+        try {
+            const response = await fetch(`${API_BASE}/injuries/active`, { headers: { 'Authorization': `Bearer ${token}` } });
+            if (response.ok) {
+                const injuries = await response.json();
+                if (injuries.length > 0) {
+                    const inj = injuries[0];
+                    const ur = await fetch(`${API_BASE}/injuries/${inj.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ injured_area: inj.injured_area, injury_date: inj.injury_date, end_date: new Date().toISOString().split('T')[0], cause: inj.cause, notes: inj.notes }) });
+                    if (ur.ok) { closeHealedModal(); showMessage('Injury marked as healed! Welcome back!', 'success'); setTimeout(() => location.reload(), 1000); }
+                    else showMessage('Failed to update injury', 'error');
                 }
-            } catch (error) {
-                console.error('Failed to load profile:', error);
-                clearProfileForm();
             }
+        } catch(e) { showMessage('Connection error', 'error'); }
+    }
+
+    function showInjuryModal(injury = null) {
+        editingInjury = injury;
+        if (injury) {
+            document.getElementById('injuredArea').value = injury.injured_area;
+            document.getElementById('injuryDate').value = injury.injury_date;
+            document.getElementById('injuryEndDate').value = injury.end_date || '';
+            document.getElementById('injuryCause').value = injury.cause;
+            document.getElementById('injuryNotes').value = injury.notes || '';
+        } else {
+            document.getElementById('injuredArea').value = '';
+            document.getElementById('injuryDate').value = new Date().toISOString().split('T')[0];
+            document.getElementById('injuryEndDate').value = '';
+            document.getElementById('injuryCause').value = '';
+            document.getElementById('injuryNotes').value = '';
         }
-        
-        function clearProfileForm() {
-            document.getElementById('profileName').value = '';
-            document.getElementById('profileAge').value = '';
-            document.getElementById('profileWeight').value = '';
-            document.getElementById('profileHeight').value = '';
-            document.getElementById('profileBelt').value = '';
-        }
-        
-        async function saveProfile() {
-            const profileData = {
-                name: document.getElementById('profileName').value || null,
-                age: parseInt(document.getElementById('profileAge').value) || null,
-                weight: parseFloat(document.getElementById('profileWeight').value) || null,
-                height: parseFloat(document.getElementById('profileHeight').value) || null,
-                belt: document.getElementById('profileBelt').value || null
-            };
-            
-            try {
-                const response = await fetch(`${API_BASE}/profile/`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify(profileData)
-                });
-                
-                if (response.ok) {
-                    showMessage('Profile saved successfully!', 'success');
-                    setTimeout(() => showDashboard(), 1000);
-                } else {
-                    showMessage('Failed to save profile', 'error');
-                }
-            } catch (error) {
-                showMessage('Connection error', 'error');
-            }
-        }
-        
-        async function changePassword() {
-            const currentPassword = document.getElementById('currentPassword').value;
-            const newPassword = document.getElementById('newPassword').value;
-            const confirmPassword = document.getElementById('confirmPassword').value;
-            
-            if (!currentPassword || !newPassword || !confirmPassword) {
-                showMessage('Please fill in all password fields', 'error');
-                return;
-            }
-            
-            if (newPassword !== confirmPassword) {
-                showMessage('New passwords do not match', 'error');
-                return;
-            }
-            
-            try {
-                const response = await fetch(`${API_BASE}/auth/change-password`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify({
-                        old_password: currentPassword,
-                        new_password: newPassword
-                    })
-                });
-                
-                if (response.ok) {
-                    showMessage('Password changed successfully!', 'success');
-                    document.getElementById('currentPassword').value = '';
-                    document.getElementById('newPassword').value = '';
-                    document.getElementById('confirmPassword').value = '';
-                } else {
-                    const error = await response.json();
-                    showMessage(error.detail || 'Failed to change password', 'error');
-                }
-            } catch (error) {
-                showMessage('Connection error', 'error');
-            }
-        }
-        
-        function cancelProfile() {
-            showDashboard();
-        }
-        
-        async function checkProfileOnLogin() {
-            try {
-                const response = await fetch(`${API_BASE}/profile/exists`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                
-                if (response.ok) {
-                    const data = await response.json();
-                    if (!data.exists) {
-                        showProfile();
-                        return;
-                    }
-                }
-            } catch (error) {
-                console.error('Failed to check profile:', error);
-            }
-            showDashboard();
-        }
-    </script>
+        document.getElementById('injuryModal').classList.add('show');
+    }
+    function closeInjuryModal() { document.getElementById('injuryModal').classList.remove('show'); editingInjury = null; }
+
+    async function saveInjury() {
+        const area = document.getElementById('injuredArea').value, date = document.getElementById('injuryDate').value, endDate = document.getElementById('injuryEndDate').value, cause = document.getElementById('injuryCause').value, notes = document.getElementById('injuryNotes').value;
+        if (!area || !date || !cause) { showMessage('Please fill in all required fields', 'error'); return; }
+        const data = { injured_area: area, injury_date: date, end_date: endDate || null, cause, notes: notes || null };
+        try {
+            let response;
+            if (editingInjury) response = await fetch(`${API_BASE}/injuries/${editingInjury.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(data) });
+            else response = await fetch(`${API_BASE}/injuries/`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(data) });
+            if (response.ok) { closeInjuryModal(); loadInjuries(); checkActiveInjuries(); showMessage(editingInjury ? 'Injury updated' : 'Injury logged', 'success'); }
+            else showMessage('Failed to save injury', 'error');
+        } catch(e) { showMessage('Connection error', 'error'); }
+    }
+
+    async function loadInjuries() {
+        try {
+            const response = await fetch(`${API_BASE}/injuries/`, { headers: { 'Authorization': `Bearer ${token}` } });
+            if (response.ok) { const injuries = await response.json(); renderInjuries(injuries); }
+        } catch(e) {}
+    }
+
+    function renderInjuries(injuries) {
+        const container = document.getElementById('injuryList');
+        if (injuries.length === 0) { container.innerHTML = '<p style="color:#8a9ba8;text-align:center;padding:30px;">No injuries logged yet</p>'; return; }
+        container.innerHTML = injuries.map(inj => {
+            const d = new Date(inj.injury_date);
+            const fmtDate = `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
+            const isActive = !inj.end_date;
+            let endHtml = '';
+            if (inj.end_date) { const ed = new Date(inj.end_date); endHtml = `<span style="color:#8a9ba8;margin-left:8px;">→ ${String(ed.getDate()).padStart(2,'0')}/${String(ed.getMonth()+1).padStart(2,'0')}/${ed.getFullYear()}</span>`; }
+            const borderCol = isActive ? '#ff6b6b' : '#2a3038';
+            const statusBadge = isActive ? '<span style="background:rgba(239,68,68,0.15);color:#fca5a5;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;padding:3px 8px;border-radius:4px;">🔴 Active</span>' : '<span style="background:rgba(148,163,184,0.1);color:#8a9ba8;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;padding:3px 8px;border-radius:4px;">✅ Healed</span>';
+            const areaTag = `<span style="background:rgba(99,102,241,0.15);color:#a5b4fc;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;padding:3px 8px;border-radius:4px;">🩹 ${inj.injured_area}</span>`;
+            return `<div class="card section-fade" style="margin-bottom:12px;border-top:3px solid ${borderCol};padding:14px;">
+                <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
+                    <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">${areaTag}${statusBadge}</div>
+                    <div style="display:flex;gap:6px;"><button onclick='showInjuryModal(${JSON.stringify(inj)})' class="edit-btn">Edit</button><button onclick="deleteInjury(${inj.id})" class="edit-btn" style="border-color:#ff6b6b;color:#ff6b6b;">Delete</button></div>
+                </div>
+                <div style="font-size:12px;color:#8a9ba8;margin-bottom:6px;">📅 ${fmtDate}${endHtml}</div>
+                <div style="font-size:13px;color:#f1f5f9;margin-bottom:4px;"><span style="color:#8a9ba8;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;font-weight:600;">Cause</span><br>${inj.cause}</div>
+                ${inj.notes ? `<div style="font-size:12px;color:#8a9ba8;margin-top:8px;padding-top:8px;border-top:1px solid #2a3038;">${inj.notes}</div>` : ''}
+            </div>`;
+        }).join('');
+    }
+
+    async function deleteInjury(injuryId) {
+        if (!confirm('Delete this injury log?')) return;
+        try {
+            const response = await fetch(`${API_BASE}/injuries/${injuryId}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
+            if (response.ok) { loadInjuries(); checkActiveInjuries(); showMessage('Injury deleted', 'success'); }
+            else showMessage('Failed to delete injury', 'error');
+        } catch(e) { showMessage('Connection error', 'error'); }
+    }
+
+    // --- Check Profile on Login ---
+    async function checkProfileOnLogin() {
+        try {
+            const response = await fetch(`${API_BASE}/profile/exists`, { headers: { 'Authorization': `Bearer ${token}` } });
+            if (response.ok) { const data = await response.json(); if (!data.exists) { showProfile(); return; } }
+        } catch(e) {}
+        showDashboard();
+    }
+</script>
 </body>
 </html>
