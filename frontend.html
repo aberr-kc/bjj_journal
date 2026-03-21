@@ -2774,9 +2774,10 @@
                     `;
                 } else {
                     document.getElementById('currentProgressStats').innerHTML = `
-                        <div class="stat-item">
-                            <div class="stat-label">No Goals Set</div>
-                            <div class="stat-value">Set goals in Profile</div>
+                        <div style="text-align: center; padding: 30px 20px;">
+                            <div style="font-size: 36px; margin-bottom: 12px;">🎯</div>
+                            <div style="font-size: 15px; color: #94a3b8; margin-bottom: 16px;">Set your goals to track your weekly progress</div>
+                            <button onclick="showProfile(); showProfileTab('goals');" class="btn" style="padding: 10px 24px; font-size: 14px;">Set Goals</button>
                         </div>
                     `;
                 }
