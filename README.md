@@ -1,4 +1,4 @@
-# BJJ Training Journal
+# MatTime
 
 A personal Brazilian Jiu-Jitsu training journal application for tracking your training sessions, techniques, and progress.
 

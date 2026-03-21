@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<iq:manifest version="3" xmlns:iq="http://www.garmin.com/xml/connectiq">
+    <iq:application 
+        id="bjj_garminApp"
+        entry="bjj_garminApp"
+        type="widget"
+        name="BJJ Roll Counter"
+        launcherIcon=""
+        minApiLevel="5.2.0">
+        
+        <iq:products>
+            <iq:product id="fr945"/>
+        </iq:products>
+        
+        <iq:permissions/>
+        <iq:languages/>
+        <iq:barrels/>
+    </iq:application>
+</iq:manifest>

@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from datetime import datetime
+from datetime import datetime, date
 from typing import List, Optional
 
 # User schemas
@@ -50,6 +50,7 @@ class Entry(BaseModel):
     id: int
     date: datetime
     session_type: str
+    injured_during_session: bool
     created_at: datetime
     updated_at: Optional[datetime]
     responses: List[Response]
@@ -90,3 +91,81 @@ class UserProfileResponse(BaseModel):
 class ChangePassword(BaseModel):
     old_password: str
     new_password: str
+
+# Goal schemas
+class UserGoalCreate(BaseModel):
+    weekly_sessions_target: int
+    weekly_rounds_target: Optional[int] = None
+    start_date: date
+
+class UserGoal(BaseModel):
+    id: int
+    user_id: int
+    weekly_sessions_target: int
+    weekly_rounds_target: Optional[int]
+    start_date: date
+    is_active: bool
+    created_at: datetime
+    
+    class Config:
+        from_attributes = True
+
+class WeeklyProgressCreate(BaseModel):
+    week_start_date: date
+    is_paused: Optional[bool] = False
+
+class WeeklyProgress(BaseModel):
+    id: int
+    user_id: int
+    week_start_date: date
+    sessions_completed: int
+    goal_met: bool
+    is_paused: bool
+    streak_count: int
+    created_at: datetime
+    updated_at: Optional[datetime]
+    
+    class Config:
+        from_attributes = True
+
+class StreakHistory(BaseModel):
+    id: int
+    user_id: int
+    streak_length: int
+    start_date: date
+    end_date: Optional[date]
+    is_current: bool
+    created_at: datetime
+    
+    class Config:
+        from_attributes = True
+
+class CurrentStreakResponse(BaseModel):
+    current_streak: int
+    longest_streak: int
+    current_week_progress: int
+    current_week_goal: int
+    weeks_until_goal: int
+    current_week_rounds: Optional[int] = 0
+    current_week_rounds_goal: Optional[int] = 0
+
+class InjuryLogCreate(BaseModel):
+    injured_area: str
+    injury_date: date
+    end_date: Optional[date] = None
+    cause: str
+    notes: Optional[str] = None
+
+class InjuryLogResponse(BaseModel):
+    id: int
+    user_id: int
+    injured_area: str
+    injury_date: date
+    end_date: Optional[date]
+    cause: str
+    notes: Optional[str]
+    created_at: datetime
+    updated_at: Optional[datetime]
+    
+    class Config:
+        from_attributes = True

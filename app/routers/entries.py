@@ -1,8 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
+from datetime import date
 from app.database import get_db
-from app.models import Entry, Response, User
+from app.models import Entry, Response, User, InjuryLog
 from app.schemas import Entry as EntrySchema, EntryCreate
 from app.dependencies import get_current_user
 
@@ -15,11 +16,20 @@ def create_entry(
     current_user: User = Depends(get_current_user)
 ):
     try:
+        # Check for active injuries
+        entry_date = entry.date.date() if hasattr(entry.date, 'date') else entry.date
+        active_injury = db.query(InjuryLog).filter(
+            InjuryLog.user_id == current_user.id,
+            InjuryLog.injury_date <= entry_date,
+            InjuryLog.end_date.is_(None)
+        ).first()
+        
         # Create entry
         db_entry = Entry(
             user_id=current_user.id,
             date=entry.date,
-            session_type=entry.session_type
+            session_type=entry.session_type,
+            injured_during_session=bool(active_injury)
         )
         db.add(db_entry)
         db.commit()

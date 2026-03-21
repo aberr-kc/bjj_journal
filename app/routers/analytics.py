@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, Query
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import func, extract
 from datetime import datetime, timedelta, timezone
 from typing import Dict, Any, Optional
@@ -35,7 +35,7 @@ def get_dashboard_stats(
         if start_date:
             entries = db.query(Entry).filter(
                 Entry.user_id == current_user.id,
-                Entry.date >= start_date
+                Entry.date >= start_date.replace(tzinfo=None)
             ).all()
         else:
             entries = db.query(Entry).filter(Entry.user_id == current_user.id).all()
@@ -84,7 +84,7 @@ def get_dashboard_stats(
         entry_ids = [e.id for e in entries]
         print(f"DEBUG: Looking for responses for entry IDs: {entry_ids}")
         try:
-            responses = db.query(Response).filter(Response.entry_id.in_(entry_ids)).all()
+            responses = db.query(Response).options(joinedload(Response.question)).filter(Response.entry_id.in_(entry_ids)).all()
             print(f"DEBUG: Found {len(responses)} responses")
             for r in responses:
                 print(f"  Response: entry_id={r.entry_id}, question_id={r.question_id}, answer='{r.answer}'")
@@ -93,24 +93,9 @@ def get_dashboard_stats(
             responses = []
         
         # Debug: Check what we have
-        if not responses:
-            # Return debug info instead of zeros
-            return {
-                "total_sessions": total_sessions,
-                "this_month": this_month,
-                "avg_rpe": 0,
-                "total_rounds": 0,
-                "session_types": {"DEBUG": f"Found {len(entries)} entries but 0 responses"},
-                "training_types": {},
-                "submissions": {},
-                "positions": {},
-                "rpe_distribution": {},
-                "monthly_trend": [],
-                "rpe_trend": [],
-                "weekly_volume": [],
-                "rounds_by_session_type": {"Gi": 0, "No Gi": 0, "Both": 0},
-                "rpe_rounds_correlation": []
-            }
+        print(f"DEBUG: Found {len(entries)} entries but {len(responses)} responses ({len(responses)/len(entries)*100:.0f}% if entries else 0)")
+        
+        # Continue processing even if no responses to see what happens
         
         # RPE analysis
         rpe_responses = [r for r in responses if r.question and "Rate of Perceived Exertion" in r.question.question_text]
@@ -142,27 +127,37 @@ def get_dashboard_stats(
         technique_responses = [r for r in responses if r.question and "Class Technique" in r.question.question_text]
         submissions = {}
         positions = {}
+        
+        submission_keywords = [
+            'Choke', 'Triangle', 'Armbar', 'Kimura', 'Omoplata', 'Americana', 
+            'Heel Hook', 'Toe Hold', 'Kneebar', 'Lock', 'Slicer', 'Crusher',
+            'Guillotine', 'D\'Arce', 'Anaconda', 'Bow and Arrow', 'Cross Collar',
+            'Baseball', 'Ezekiel', 'Paper Cutter', 'Loop', 'Peruvian', 'Japanese',
+            'Gogoplata', 'Von Flue', 'Twister', 'Crank', 'Wrist', 'Mata Leão',
+            'Brabo', 'Kata Gatame', 'Monoplata', 'Tarikoplata', 'Mir Lock',
+            'Shoulder Lock', 'Scissor', 'Necktie', 'Buggy', 'Estima', 'Banana Split'
+        ]
+        
         for r in technique_responses:
-            # Extract submission from "Position - Submission" format
             if " - " in r.answer:
                 parts = r.answer.split(" - ")
                 if len(parts) >= 2:
                     position = parts[0].strip()
                     technique_type = parts[1].strip()
                     
-                    # Count positions/areas
-                    positions[position] = positions.get(position, 0) + 1
+                    # Check if it's a specific submission name
+                    is_submission = any(keyword.lower() in technique_type.lower() for keyword in submission_keywords)
                     
-                    # Only count if it's a submission (not sweeps, escapes, etc.)
-                    submission_keywords = [
-                        'Choke', 'Triangle', 'Armbar', 'Kimura', 'Omoplata', 'Americana', 
-                        'Heel Hook', 'Toe Hold', 'Kneebar', 'Lock', 'Slicer', 'Crusher',
-                        'Guillotine', 'D\'Arce', 'Anaconda', 'Bow and Arrow', 'Cross Collar',
-                        'Baseball', 'Ezekiel', 'Paper Cutter', 'Loop', 'Peruvian', 'Japanese',
-                        'Gogoplata', 'Von Flue', 'Twister', 'Crank', 'Wrist'
-                    ]
-                    if any(keyword.lower() in technique_type.lower() for keyword in submission_keywords):
+                    if is_submission:
+                        # Count by submission name for submissions chart
                         submissions[technique_type] = submissions.get(technique_type, 0) + 1
+                        # Count by position for positions chart (as "Position - Attacks/Submissions")
+                        full_technique = f"{position} - Attacks/Submissions"
+                        positions[full_technique] = positions.get(full_technique, 0) + 1
+                    else:
+                        # Not a submission, count normally
+                        full_technique = f"{position} - {technique_type}"
+                        positions[full_technique] = positions.get(full_technique, 0) + 1
         
         # Monthly trend (last 6 months)
         monthly_trend = []
@@ -190,21 +185,21 @@ def get_dashboard_stats(
         if period == "7d":
             # Show daily for last 7 days
             for i in range(7):
-                day_start = now - timedelta(days=i+1)
-                day_end = day_start + timedelta(days=1)
+                day_start = (now - timedelta(days=i+1)).replace(tzinfo=None)
+                day_end = (day_start + timedelta(days=1))
                 day_entries = [e for e in entries if day_start <= e.date < day_end]
                 day_rounds = sum(int(r.answer) for r in responses if r.entry_id in [e.id for e in day_entries] and r.question and "Rounds Rolled" in r.question.question_text and r.answer.isdigit())
                 
                 weekly_volume.append({
-                    "period": day_start.strftime("%d/%m"),
-                    "date_range": day_start.strftime("%d/%m"),
+                    "period": (day_start + timedelta(hours=12)).strftime("%d/%m"),
+                    "date_range": (day_start + timedelta(hours=12)).strftime("%d/%m"),
                     "rounds": day_rounds,
                     "sessions": len(day_entries)
                 })
         elif period == "30d":
             # Show 4 weeks for last 30 days
             for i in range(4):
-                week_start = now - timedelta(days=7*(i+1))
+                week_start = (now - timedelta(days=7*(i+1))).replace(tzinfo=None)
                 week_end = week_start + timedelta(days=7)
                 week_entries = [e for e in entries if week_start <= e.date <= week_end]
                 week_rounds = sum(int(r.answer) for r in responses if r.entry_id in [e.id for e in week_entries] and r.question and "Rounds Rolled" in r.question.question_text and r.answer.isdigit())
@@ -221,9 +216,9 @@ def get_dashboard_stats(
         elif period == "6m":
             # Show 6 months
             for i in range(6):
-                month_start = (now - timedelta(days=30*i)).replace(day=1)
+                month_start = (now - timedelta(days=30*i)).replace(day=1, tzinfo=None)
                 if i == 0:
-                    month_end = now
+                    month_end = now.replace(tzinfo=None)
                 else:
                     month_end = month_start.replace(day=28) + timedelta(days=4)
                     month_end = month_end - timedelta(days=month_end.day)
@@ -240,9 +235,9 @@ def get_dashboard_stats(
         elif period == "1y":
             # Show 12 months
             for i in range(12):
-                month_start = (now - timedelta(days=30*i)).replace(day=1)
+                month_start = (now - timedelta(days=30*i)).replace(day=1, tzinfo=None)
                 if i == 0:
-                    month_end = now
+                    month_end = now.replace(tzinfo=None)
                 else:
                     month_end = month_start.replace(day=28) + timedelta(days=4)
                     month_end = month_end - timedelta(days=month_end.day)
@@ -259,7 +254,7 @@ def get_dashboard_stats(
         else:
             # Show last 4 weeks for other periods
             for i in range(4):
-                week_start = now - timedelta(days=7*(i+1))
+                week_start = (now - timedelta(days=7*(i+1))).replace(tzinfo=None)
                 week_end = week_start + timedelta(days=7)
                 week_entries = [e for e in entries if week_start <= e.date <= week_end]
                 week_rounds = sum(int(r.answer) for r in responses if r.entry_id in [e.id for e in week_entries] and r.question and "Rounds Rolled" in r.question.question_text and r.answer.isdigit())
@@ -315,20 +310,5 @@ def get_dashboard_stats(
         print(f"DEBUG: Exception in dashboard: {str(e)}")
         import traceback
         traceback.print_exc()
-        # Return minimal safe data
-        return {
-            "total_sessions": 0,
-            "this_month": 0,
-            "avg_rpe": 0,
-            "total_rounds": 0,
-            "session_types": {},
-            "training_types": {},
-            "submissions": {},
-            "positions": {},
-            "rpe_distribution": {},
-            "monthly_trend": [],
-            "rpe_trend": [],
-            "weekly_volume": [],
-            "rounds_by_session_type": {"Gi": 0, "No Gi": 0, "Both": 0},
-            "rpe_rounds_correlation": []
-        }
+        # Re-raise to see the actual error
+        raise
