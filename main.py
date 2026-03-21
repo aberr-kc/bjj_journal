@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from app.database import engine, SessionLocal
 from app.models import Base, Question
-from app.routers import auth, entries, questions, analytics, profile
+from app.routers import auth, entries, questions, analytics, profile, goals, injuries, recommendations
 import os
 
 # Create database tables (only for local development)
@@ -27,6 +27,9 @@ app.include_router(entries.router)
 app.include_router(questions.router)
 app.include_router(analytics.router)
 app.include_router(profile.router)
+app.include_router(goals.router)
+app.include_router(injuries.router)
+app.include_router(recommendations.router)
 
 @app.get("/")
 def serve_frontend():
