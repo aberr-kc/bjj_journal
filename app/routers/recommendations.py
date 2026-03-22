@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session, joinedload
 from datetime import datetime, timedelta, timezone
 from typing import List, Dict, Any
 from app.database import get_db
-from app.models import Entry, Response, Question, User, InjuryLog, UserGoal
+from app.models import Entry, Response, Question, User, InjuryLog, UserGoal, TechniqueGoal
 from app.dependencies import get_current_user
 
 router = APIRouter(prefix="/recommendations", tags=["recommendations"])
@@ -362,6 +362,102 @@ def recommend_goal_adjustment(db: Session, user_id: int, entries: List) -> List[
     return recs
 
 
+def recommend_technique_goals(db: Session, user_id: int, technique_data: Dict, entries: List) -> List[Dict]:
+    """Generate recommendations based on user's active technique goals vs actual training."""
+    recs = []
+    goals = db.query(TechniqueGoal).filter(
+        TechniqueGoal.user_id == user_id,
+        TechniqueGoal.is_active == True
+    ).all()
+
+    if not goals:
+        return recs
+
+    position_counts = technique_data["position_counts"]
+    position_last_seen = technique_data["position_last_seen"]
+    now = datetime.utcnow()
+
+    for goal in goals:
+        pos = goal.position
+        times_trained = position_counts.get(pos, 0)
+        last_seen = position_last_seen.get(pos)
+        days_since = (now - last_seen).days if last_seen else None
+
+        # Calculate deadline info if timeline is set
+        days_left = None
+        if goal.timeline_weeks and goal.created_at:
+            created = goal.created_at
+            if created.tzinfo is not None:
+                created = created.replace(tzinfo=None)
+            deadline = created + timedelta(weeks=goal.timeline_weeks)
+            days_left = (deadline - now).days
+
+        # Rule 1: Goal position never trained — high priority
+        if times_trained == 0:
+            msg = f"You set a goal to improve <strong>{pos}</strong> but haven't trained it in the last 90 days."
+            if days_left is not None and days_left > 0:
+                msg += f" You have <span class='rec-accent'>{days_left} days</span> left on this goal."
+            recs.append(build_recommendation(
+                type_="technique_goal",
+                priority="high",
+                title=f"Start training {pos}",
+                message=msg,
+                action=f"Focus your next session on {pos}.",
+                data={"position": pos, "times_trained": 0, "days_left": days_left}
+            ))
+            continue
+
+        # Determine priority based on days since last trained:
+        # >14 days = high, >7 days = medium, >3 days = low
+        if days_since is not None and days_since > 14:
+            priority = "high"
+            if days_left is not None and days_left <= 0:
+                priority = "high"
+            msg = f"You haven't trained <strong>{pos}</strong> in <span class='rec-accent'>{days_since} days</span>, but it's one of your technique goals."
+            if days_left is not None and days_left > 0:
+                msg += f" Only {days_left} days left on this goal."
+            elif days_left is not None and days_left <= 0:
+                msg += " This goal is now <strong>overdue</strong>."
+            recs.append(build_recommendation(
+                type_="technique_goal",
+                priority=priority,
+                title=f"Revisit {pos} (goal)",
+                message=msg,
+                action=f"Schedule a session focused on {pos}.",
+                data={"position": pos, "days_since_trained": days_since, "days_left": days_left}
+            ))
+            continue
+
+        if days_since is not None and days_since > 7:
+            msg = f"It's been <span class='rec-accent'>{days_since} days</span> since you trained <strong>{pos}</strong>."
+            if days_left is not None and days_left > 0:
+                msg += f" {days_left} days left on this goal."
+            recs.append(build_recommendation(
+                type_="technique_goal",
+                priority="medium",
+                title=f"{pos} needs attention",
+                message=msg,
+                action=f"Work on {pos} in your next session.",
+                data={"position": pos, "days_since_trained": days_since, "days_left": days_left}
+            ))
+            continue
+
+        if days_since is not None and days_since > 3:
+            msg = f"You last trained <strong>{pos}</strong> <span class='rec-accent'>{days_since} days</span> ago. Keep the momentum going."
+            if days_left is not None and days_left > 0:
+                msg += f" {days_left} days left on this goal."
+            recs.append(build_recommendation(
+                type_="technique_goal",
+                priority="low",
+                title=f"Keep up {pos}",
+                message=msg,
+                action=f"Continue drilling {pos} to stay on track.",
+                data={"position": pos, "days_since_trained": days_since, "days_left": days_left}
+            ))
+
+    return recs
+
+
 # --- Main endpoint ---
 
 @router.get("/")
@@ -390,6 +486,9 @@ def get_recommendations(
 
     # Goal adjustment (no gate — just needs an active goal + enough history)
     all_recs += recommend_goal_adjustment(db, current_user.id, entries)
+
+    # Technique goal recommendations (no gate — just needs active technique goals)
+    all_recs += recommend_technique_goals(db, current_user.id, technique_data, entries)
 
     # Sort by priority: high → medium → low
     priority_order = {"high": 0, "medium": 1, "low": 2}

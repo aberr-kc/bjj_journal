@@ -227,6 +227,7 @@
         .rec-category-submission { background: rgba(239,68,68,0.2); color: #fca5a5; }
         .rec-category-intensity { background: rgba(245,158,11,0.2); color: #fcd34d; }
         .rec-category-goal { background: rgba(34,197,94,0.2); color: #86efac; }
+        .rec-category-technique_goal { background: rgba(168,85,247,0.2); color: #d8b4fe; }
         .rec-title {
             font-size: 14px;
             font-weight: 700;
@@ -718,6 +719,7 @@
                         <div class="card-header">
                             <h3 id="formTitle" class="card-title">New Training Activity</h3>
                         </div>
+                        <div id="techniqueGoalReminder"></div>
                         <div class="form-group">
                             <label>Date:</label>
                             <input type="date" id="entryDate" class="form-control" required>
@@ -792,6 +794,7 @@
                         
                         <!-- Goals Tab -->
                         <div id="goalsInfoTab" class="hidden">
+                        <h4 style="color: #ef4444; margin-bottom: 15px; font-size: 16px; border-bottom: 1px solid #475569; padding-bottom: 10px;">Session Goals</h4>
                         <div class="form-group">
                             <label>Goal number of sessions per week:</label>
                             <input type="number" id="goalSessions" class="form-control" placeholder="Number of sessions" min="1" max="14">
@@ -804,14 +807,42 @@
                             <h4 style="color: #ef4444; margin-bottom: 10px;">Current Progress</h4>
                             <div id="goalProgress"></div>
                         </div>
+                        <div style="display: flex; gap: 15px; margin-top: 20px; margin-bottom: 30px;">
+                            <button onclick="saveGoals()" class="btn">Save Session Goals</button>
+                            <button onclick="loadGoalProgress()" class="btn btn-secondary">View Progress</button>
+                        </div>
+
+                        <h4 style="color: #ef4444; margin-bottom: 15px; font-size: 16px; border-bottom: 1px solid #475569; padding-bottom: 10px;">Technique Goals</h4>
+                        <div class="form-group" style="position: relative;">
+                            <label>Position/Area:</label>
+                            <input type="text" id="techniqueGoalPosition" class="form-control" placeholder="Search position/area" oninput="filterTechniqueGoalPositions(this.value)" onfocus="showTechniqueGoalDropdown()" onblur="hideTechniqueGoalDropdown()">
+                            <div id="techniqueGoalDropdown" class="technique-dropdown hidden"></div>
+                        </div>
+                        <div class="form-group">
+                            <label>Notes (optional):</label>
+                            <input type="text" id="techniqueGoalNotes" class="form-control" placeholder="e.g. Focus on sweeps from here">
+                        </div>
+                        <div class="form-group">
+                            <label>Timeline - How long do you want to focus on this goal (weeks):</label>
+                            <input type="number" id="techniqueGoalTimeline" class="form-control" placeholder="e.g. 4" min="1" max="52">
+                        </div>
+                        <button onclick="addTechniqueGoal()" class="btn" style="margin-bottom: 20px;">+ Add Technique Goal</button>
+                        <div id="techniqueGoalsList" style="margin-top: 10px;"></div>
+
+                        <div style="margin-top: 25px;">
+                            <h4 style="color: #ef4444; margin-bottom: 15px; font-size: 16px; border-bottom: 1px solid #475569; padding-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
+                                Goal History
+                                <button onclick="loadTechniqueGoalHistory()" class="edit-btn" style="font-size: 12px;">Refresh</button>
+                            </h4>
+                            <div id="techniqueGoalHistory"><p style="color: #94a3b8; font-size: 14px;">Loading history...</p></div>
+                        </div>
+
                         <div id="goalsMessage"></div>
                         <div style="display: flex; align-items: center; gap: 8px; margin-top: 20px;">
                             <input type="checkbox" id="hideRecommendations" style="width: auto; margin: 0; accent-color: #ef4444;" onchange="toggleHideRecommendations()">
                             <label for="hideRecommendations" style="margin: 0; color: #94a3b8; font-size: 14px; cursor: pointer;">Hide Recommendations</label>
                         </div>
                         <div style="display: flex; gap: 15px; margin-top: 30px;">
-                            <button onclick="saveGoals()" class="btn">Save Goals</button>
-                            <button onclick="loadGoalProgress()" class="btn btn-secondary">View Progress</button>
                             <button onclick="cancelProfile()" class="btn btn-secondary">Cancel</button>
                         </div>
                         </div>
@@ -901,6 +932,35 @@
             <div style="display: flex; gap: 15px;">
                 <button onclick="confirmHealedInjury()" class="btn" style="flex: 1;">Yes, I'm Healed!</button>
                 <button onclick="closeHealedModal()" class="btn btn-secondary" style="flex: 1;">Not Yet</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Expired Goal Modal -->
+    <div id="expiredGoalModal" class="modal">
+        <div class="modal-content" style="max-width: 450px;">
+            <h3 style="margin-bottom: 10px; color: #ef4444;">⏱ Goal Completed</h3>
+            <p id="expiredGoalMessage" style="color: #94a3b8; margin-bottom: 20px; font-size: 15px;"></p>
+            <div class="form-group">
+                <label style="color: #94a3b8; font-size: 14px;">How much did you improve? (1-5)</label>
+                <div id="expiredGoalRating" style="display: flex; gap: 8px; margin-top: 8px;">
+                    <button onclick="selectExpiredRating(1)" class="btn btn-secondary" style="flex: 1; padding: 10px; font-size: 18px;" data-rating="1">1</button>
+                    <button onclick="selectExpiredRating(2)" class="btn btn-secondary" style="flex: 1; padding: 10px; font-size: 18px;" data-rating="2">2</button>
+                    <button onclick="selectExpiredRating(3)" class="btn btn-secondary" style="flex: 1; padding: 10px; font-size: 18px;" data-rating="3">3</button>
+                    <button onclick="selectExpiredRating(4)" class="btn btn-secondary" style="flex: 1; padding: 10px; font-size: 18px;" data-rating="4">4</button>
+                    <button onclick="selectExpiredRating(5)" class="btn btn-secondary" style="flex: 1; padding: 10px; font-size: 18px;" data-rating="5">5</button>
+                </div>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 20px;">
+                <button onclick="completeExpiredGoal('complete')" class="btn" style="width: 100%;">✅ Mark as Completed</button>
+                <button onclick="showExtendOptions()" class="btn btn-secondary" style="width: 100%;">⏱ Extend Goal</button>
+                <div id="extendOptions" class="hidden" style="margin-top: 5px;">
+                    <div class="form-group" style="margin-bottom: 10px;">
+                        <input type="number" id="extendWeeks" class="form-control" placeholder="Weeks to extend" min="1" max="52" step="1" onkeydown="if(event.key==='.'||event.key===','||event.key==='e')event.preventDefault()">
+                    </div>
+                    <button onclick="completeExpiredGoal('extend')" class="btn" style="width: 100%; padding: 10px;">Extend</button>
+                </div>
+                <button onclick="completeExpiredGoal('archive')" class="btn btn-secondary" style="width: 100%;">📦 Archive</button>
             </div>
         </div>
     </div>
@@ -1277,6 +1337,25 @@
                 div.innerHTML = `<label>${question.question_text}:</label>${input}`;
                 container.appendChild(div);
             });
+        }
+
+        async function loadTechniqueGoalReminder() {
+            const container = document.getElementById('techniqueGoalReminder');
+            if (!container) return;
+            container.innerHTML = '';
+            try {
+                const response = await fetch(`${API_BASE}/goals/techniques/progress`, { headers: { 'Authorization': `Bearer ${token}` } });
+                if (!response.ok) return;
+                const goals = await response.json();
+                if (!goals.length) return;
+                const items = goals.map(g => {
+                    let timeInfo = '';
+                    if (g.days_left !== null && g.days_left > 0) timeInfo = ` (${g.days_left}d left)`;
+                    else if (g.days_left !== null && g.days_left <= 0) timeInfo = ' (overdue)';
+                    return `<span style="color:#f1f5f9;font-weight:600;">${g.position}</span>${timeInfo}`;
+                });
+                container.innerHTML = `<div style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.25);border-radius:8px;padding:12px 16px;margin-bottom:20px;font-size:13px;color:#94a3b8;">🎯 Current focus: ${items.join(' · ')}</div>`;
+            } catch(e) {}
         }
 
         async function saveEntry() {
@@ -2139,6 +2218,8 @@
                 document.getElementById('goalsInfoTab').classList.remove('hidden');
                 document.getElementById('goalsTab').style.borderBottom = '2px solid #ef4444';
                 document.getElementById('goalsTab').style.background = '#64748b';
+                loadTechniqueGoals();
+                loadTechniqueGoalHistory();
             } else if (tab === 'password') {
                 document.getElementById('profileInfoTab').classList.add('hidden');
                 document.getElementById('passwordInfoTab').classList.remove('hidden');
@@ -2317,6 +2398,7 @@
                     document.getElementById(`q${question.id}`).value = '';
                 });
             }
+            loadTechniqueGoalReminder();
         }
 
         async function editEntry(entryId) {
@@ -2616,6 +2698,155 @@
             }
         }
 
+        // --- Technique Goals ---
+        function showTechniqueGoalDropdown() {
+            const dd = document.getElementById('techniqueGoalDropdown');
+            populateTechniqueGoalDropdown(allPositions);
+            dd.classList.remove('hidden');
+        }
+        function hideTechniqueGoalDropdown() {
+            setTimeout(() => { document.getElementById('techniqueGoalDropdown').classList.add('hidden'); }, 200);
+        }
+        function filterTechniqueGoalPositions(value) {
+            populateTechniqueGoalDropdown(allPositions.filter(p => p.toLowerCase().includes(value.toLowerCase())));
+        }
+        function populateTechniqueGoalDropdown(list) {
+            const dd = document.getElementById('techniqueGoalDropdown');
+            dd.innerHTML = list.map(p => `<div class="technique-option" onmousedown="selectTechniqueGoalPosition('${p.replace(/'/g, "\\'")}')">${p}</div>`).join('');
+        }
+        function selectTechniqueGoalPosition(pos) {
+            document.getElementById('techniqueGoalPosition').value = pos;
+            document.getElementById('techniqueGoalDropdown').classList.add('hidden');
+        }
+
+        async function loadTechniqueGoals() {
+            try {
+                const response = await fetch(`${API_BASE}/goals/techniques`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (response.ok) {
+                    const goals = await response.json();
+                    renderTechniqueGoals(goals);
+                }
+            } catch (error) {
+                console.error('Failed to load technique goals:', error);
+            }
+        }
+
+        function renderTechniqueGoals(goals) {
+            const container = document.getElementById('techniqueGoalsList');
+            if (!goals.length) {
+                container.innerHTML = '<p style="color: #94a3b8; font-size: 14px;">No technique goals yet. Add a position you want to improve.</p>';
+                return;
+            }
+            container.innerHTML = goals.map(g => {
+                let targetDateHtml = '';
+                if (g.timeline_weeks && g.created_at) {
+                    const start = new Date(g.created_at);
+                    const target = new Date(start.getTime() + g.timeline_weeks * 7 * 24 * 60 * 60 * 1000);
+                    const dd = String(target.getDate()).padStart(2, '0');
+                    const mm = String(target.getMonth() + 1).padStart(2, '0');
+                    const yy = String(target.getFullYear()).slice(-2);
+                    targetDateHtml = `<div style="font-size: 12px; color: #ef4444; margin-top: 4px;">🎯 Target Completion Date - ${dd}/${mm}/${yy}</div>`;
+                }
+                return `
+                <div style="display: flex; justify-content: space-between; align-items: center; background: #475569; padding: 12px 16px; border-radius: 8px; margin-bottom: 10px; border-left: 4px solid #ef4444;">
+                    <div>
+                        <div style="font-weight: 600; font-size: 15px; color: #f1f5f9;">${g.position}</div>
+                        ${g.notes ? `<div style="font-size: 13px; color: #94a3b8; margin-top: 3px;">${g.notes}</div>` : ''}
+                        ${g.timeline_weeks ? `<div style="font-size: 12px; color: #94a3b8; margin-top: 4px;">⏱ ${g.timeline_weeks} week${g.timeline_weeks > 1 ? 's' : ''}</div>` : ''}
+                        ${targetDateHtml}
+                    </div>
+                    <button onclick="removeTechniqueGoal(${g.id})" style="background: none; border: none; color: #ff6b6b; cursor: pointer; font-size: 20px; padding: 4px 8px;" aria-label="Archive technique goal">&times;</button>
+                </div>`;
+            }).join('');
+        }
+
+        async function addTechniqueGoal() {
+            const position = document.getElementById('techniqueGoalPosition').value.trim();
+            const notes = document.getElementById('techniqueGoalNotes').value.trim();
+            const timeline = parseInt(document.getElementById('techniqueGoalTimeline').value);
+            if (!position) { showGoalsMessage('Please select a position/area', 'error'); return; }
+            try {
+                const response = await fetch(`${API_BASE}/goals/techniques`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({ position, notes: notes || null, timeline_weeks: timeline || null })
+                });
+                if (response.ok) {
+                    document.getElementById('techniqueGoalPosition').value = '';
+                    document.getElementById('techniqueGoalNotes').value = '';
+                    document.getElementById('techniqueGoalTimeline').value = '';
+                    loadTechniqueGoals();
+                    showGoalsMessage('Technique goal added', 'success');
+                } else {
+                    showGoalsMessage('Failed to add technique goal', 'error');
+                }
+            } catch (error) {
+                showGoalsMessage('Connection error', 'error');
+            }
+        }
+
+        async function removeTechniqueGoal(id) {
+            try {
+                const response = await fetch(`${API_BASE}/goals/techniques/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (response.ok) {
+                    loadTechniqueGoals();
+                    loadTechniqueGoalHistory();
+                    showGoalsMessage('Technique goal archived', 'success');
+                } else {
+                    showGoalsMessage('Failed to remove', 'error');
+                }
+            } catch (error) {
+                showGoalsMessage('Connection error', 'error');
+            }
+        }
+
+        async function loadTechniqueGoalHistory() {
+            const container = document.getElementById('techniqueGoalHistory');
+            if (!container) return;
+            try {
+                const response = await fetch(`${API_BASE}/goals/techniques/history`, { headers: { 'Authorization': `Bearer ${token}` } });
+                if (response.ok) {
+                    const goals = await response.json();
+                    if (!goals.length) { container.innerHTML = '<p style="color: #94a3b8; font-size: 14px;">No completed or archived goals yet.</p>'; return; }
+                    container.innerHTML = goals.map(g => {
+                        const statusIcon = g.status === 'completed' ? '✅' : '📦';
+                        const statusLabel = g.status === 'completed' ? 'Completed' : 'Archived';
+                        const statusColor = g.status === 'completed' ? '#22c55e' : '#94a3b8';
+                        let ratingHtml = '';
+                        if (g.self_rating) {
+                            const stars = '★'.repeat(g.self_rating) + '☆'.repeat(5 - g.self_rating);
+                            ratingHtml = `<div style="font-size: 13px; color: #fbbf24; margin-top: 4px;">${stars} (${g.self_rating}/5)</div>`;
+                        }
+                        let dateRange = '';
+                        if (g.created_at) {
+                            const s = new Date(g.created_at);
+                            const sStr = `${String(s.getDate()).padStart(2,'0')}/${String(s.getMonth()+1).padStart(2,'0')}/${String(s.getFullYear()).slice(-2)}`;
+                            let eStr = 'now';
+                            if (g.completed_at) { const e = new Date(g.completed_at); eStr = `${String(e.getDate()).padStart(2,'0')}/${String(e.getMonth()+1).padStart(2,'0')}/${String(e.getFullYear()).slice(-2)}`; }
+                            dateRange = `<div style="font-size: 12px; color: #94a3b8; margin-top: 4px;">📅 ${sStr} → ${eStr}</div>`;
+                        }
+                        const weeksLabel = g.duration_weeks === 1 ? '1 week' : `${g.duration_weeks} weeks`;
+                        const sessionsLabel = g.session_count === 1 ? '1 session' : `${g.session_count} sessions`;
+                        return `<div style="background: #475569; padding: 12px 16px; border-radius: 8px; margin-bottom: 10px; border-left: 4px solid ${statusColor};">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <div style="font-weight: 600; font-size: 15px; color: #f1f5f9;">${g.position}</div>
+                                <span style="font-size: 11px; font-weight: 600; color: ${statusColor}; text-transform: uppercase;">${statusIcon} ${statusLabel}</span>
+                            </div>
+                            ${g.notes ? `<div style="font-size: 13px; color: #94a3b8; margin-top: 3px;">${g.notes}</div>` : ''}
+                            <div style="font-size: 13px; color: #94a3b8; margin-top: 4px;">🏋️ ${sessionsLabel} over ${weeksLabel}</div>
+                            ${ratingHtml}
+                            ${dateRange}
+                        </div>`;
+                    }).join('');
+                }
+            } catch(e) { container.innerHTML = '<p style="color: #94a3b8; font-size: 14px;">Failed to load history.</p>'; }
+        }
+
         function toggleHideRecommendations() {
             const checked = document.getElementById('hideRecommendations').checked;
             localStorage.setItem('bjj_hide_recommendations', checked ? 'true' : 'false');
@@ -2715,9 +2946,10 @@
                     }
                 }
 
-                const icons = { position: '🥋', submission: '🔒', intensity: '⚡', goal: '🎯' };
+                const icons = { position: '🥋', submission: '🔒', intensity: '⚡', goal: '🎯', technique_goal: '🎯' };
                 const priorityIcons = { high: '🚨', medium: '⚠️', low: '💡' };
-                const categoryClass = { position: 'rec-category-position', submission: 'rec-category-submission', intensity: 'rec-category-intensity', goal: 'rec-category-goal' };
+                const categoryClass = { position: 'rec-category-position', submission: 'rec-category-submission', intensity: 'rec-category-intensity', goal: 'rec-category-goal', technique_goal: 'rec-category-technique_goal' };
+                const typeLabels = { position: 'position', submission: 'submission', intensity: 'intensity', goal: 'goal', technique_goal: 'technique goal' };
                 const ctaLabels = {
                     position: 'Log Session',
                     submission: 'Log Session',
@@ -2725,11 +2957,10 @@
                 };
 
                 function highlightMessage(msg) {
-                    // Bold numbers and positions (words in title case or digits)
+                    if (msg.includes('<strong>') || msg.includes('rec-accent')) return msg;
                     return msg
                         .replace(/(\d+(\.\d+)?)/g, '<span class="rec-accent">$1</span>')
                         .replace(/\b([A-Z][a-z]+(?: [A-Z][a-z]+)*)\b/g, (match) => {
-                            // Only bold multi-word proper nouns (positions)
                             if (match.split(' ').length > 1) return `<strong>${match}</strong>`;
                             return match;
                         });
@@ -2757,7 +2988,7 @@
                     <div class="rec-item rec-item-${rec.priority}">
                         <div class="rec-item-header">
                             <span class="rec-priority-icon">${priorityIcons[rec.priority] || '📌'}</span>
-                            <span class="rec-category-tag ${categoryClass[rec.type] || ''}">${icons[rec.type] || ''} ${rec.type}</span>
+                            <span class="rec-category-tag ${categoryClass[rec.type] || ''}">${icons[rec.type] || ''} ${typeLabels[rec.type] || rec.type}</span>
                         </div>
                         <div class="rec-title">${rec.title}</div>
                         <div class="rec-message">${highlightMessage(rec.message)}</div>
@@ -2851,6 +3082,63 @@
                             ${roundsAchieved ? '<div class="goal-achieved" style="margin-top:10px;">🎉 Weekly rounds goal reached!</div>' : ''}
                         </div>
                     `;
+                    // Load technique goals progress into dashboard
+                    try {
+                        const tRes = await fetch(`${API_BASE}/goals/techniques/progress`, { headers: { 'Authorization': `Bearer ${token}` } });
+                        if (tRes.ok) {
+                            const tGoals = await tRes.json();
+                            if (tGoals.length) {
+                                let tHtml = '<div style="margin-top: 15px;"><div style="font-size: 13px; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px;">Technique Goals</div>';
+                                tGoals.forEach(g => {
+                                    let progressBarHtml = '';
+                                    if (g.total_days) {
+                                        const elapsed = g.total_days - (g.days_left || 0);
+                                        const pct = Math.min(Math.round((elapsed / g.total_days) * 100), 100);
+                                        const expired = g.days_left !== null && g.days_left <= 0;
+                                        const barColor = expired ? '#ff6b6b' : g.days_left <= 7 ? '#f59e0b' : '#ef4444';
+                                        const dd = new Date(new Date(g.created_at).getTime() + g.timeline_weeks * 7 * 24 * 60 * 60 * 1000);
+                                        const targetStr = `${String(dd.getDate()).padStart(2,'0')}/${String(dd.getMonth()+1).padStart(2,'0')}/${String(dd.getFullYear()).slice(-2)}`;
+                                        const statusLabel = expired ? 'Overdue' : `${g.days_left}d left`;
+                                        const statusColor = expired ? '#ff6b6b' : g.days_left <= 7 ? '#f59e0b' : '#ef4444';
+                                        progressBarHtml = `
+                                            <div style="margin-top: 8px;">
+                                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                                                    <span style="font-size: 11px; color: #94a3b8;">🎯 ${targetStr}</span>
+                                                    <span style="font-size: 11px; font-weight: 600; color: ${statusColor};">${statusLabel}</span>
+                                                </div>
+                                                <div style="width: 100%; background: #1e293b; border-radius: 6px; height: 6px; overflow: hidden;">
+                                                    <div style="width: ${pct}%; background: ${barColor}; height: 100%; border-radius: 6px; transition: width 0.4s ease;"></div>
+                                                </div>
+                                            </div>`;
+                                    }
+                                    const weeksLabel = g.weeks_elapsed === 1 ? '1 week' : `${g.weeks_elapsed} weeks`;
+                                    const sessionsLabel = g.session_count === 1 ? '1 time' : `${g.session_count} times`;
+                                    const streakHtml = g.weekly_streak > 0 ? `<div style="font-size: 12px; color: #fbbf24; margin-top: 4px;">🔥 ${g.weekly_streak} week${g.weekly_streak > 1 ? 's' : ''} in a row</div>` : '';
+                                    tHtml += `<div style="background: #2d3f55; padding: 12px 14px; border-radius: 8px; margin-bottom: 8px; border-left: 4px solid #ef4444;">
+                                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                                            <div style="font-weight: 600; font-size: 14px; color: #f1f5f9;">${g.position}</div>
+                                            <div style="font-size: 12px; color: #ef4444; font-weight: 600;">${g.sessions_per_week}/wk</div>
+                                        </div>
+                                        <div style="font-size: 12px; color: #94a3b8; margin-top: 4px;">Trained ${sessionsLabel} in ${weeksLabel}</div>
+                                        ${streakHtml}
+                                        ${g.notes ? `<div style="font-size: 12px; color: #94a3b8; margin-top: 3px;">${g.notes}</div>` : ''}
+                                        ${progressBarHtml}
+                                    </div>`;
+                                });
+                                tHtml += '</div>';
+                                progressContainer.innerHTML += tHtml;
+                            } else {
+                                progressContainer.innerHTML += `
+                                    <div style="margin-top: 15px; background: #2d3f55; padding: 20px; border-radius: 8px; text-align: center;">
+                                        <div style="font-size: 28px; margin-bottom: 8px;">🥋</div>
+                                        <div style="font-size: 14px; color: #94a3b8; margin-bottom: 12px;">Add a technique goal to focus on!</div>
+                                        <button onclick="showProfile(); showProfileTab('goals');" class="btn" style="padding: 10px 20px; font-size: 13px;">Set Technique Goal</button>
+                                    </div>`;
+                            }
+                        }
+                    } catch(te) {}
+                    // Check for expired goals
+                    await checkExpiredGoals();
                 } else {
                     document.getElementById('currentProgressStats').innerHTML = `
                         <div style="text-align: center; padding: 30px 20px;">
@@ -2865,6 +3153,84 @@
             }
         }
         
+        // --- Expired Goals ---
+        let currentExpiredGoals = [];
+        let currentExpiredIndex = 0;
+        let selectedExpiredRating = null;
+
+        async function checkExpiredGoals() {
+            try {
+                const response = await fetch(`${API_BASE}/goals/techniques/expired`, { headers: { 'Authorization': `Bearer ${token}` } });
+                if (response.ok) {
+                    currentExpiredGoals = await response.json();
+                    currentExpiredIndex = 0;
+                    if (currentExpiredGoals.length > 0) showNextExpiredGoal();
+                }
+            } catch(e) {}
+        }
+
+        function showNextExpiredGoal() {
+            if (currentExpiredIndex >= currentExpiredGoals.length) {
+                document.getElementById('expiredGoalModal').classList.remove('show');
+                return;
+            }
+            const g = currentExpiredGoals[currentExpiredIndex];
+            document.getElementById('expiredGoalMessage').textContent = `Your ${g.timeline_weeks}-week ${g.position} focus ended. How did it go?`;
+            selectedExpiredRating = null;
+            document.querySelectorAll('#expiredGoalRating button').forEach(b => { b.style.background = '#475569'; b.style.color = '#f1f5f9'; });
+            document.getElementById('extendOptions').classList.add('hidden');
+            document.getElementById('extendWeeks').value = '';
+            document.getElementById('expiredGoalModal').classList.add('show');
+        }
+
+        function selectExpiredRating(rating) {
+            selectedExpiredRating = rating;
+            document.querySelectorAll('#expiredGoalRating button').forEach(b => {
+                const r = parseInt(b.getAttribute('data-rating'));
+                if (r <= rating) { b.style.background = '#ef4444'; b.style.color = '#f1f5f9'; }
+                else { b.style.background = '#475569'; b.style.color = '#f1f5f9'; }
+            });
+        }
+
+        function showExtendOptions() { document.getElementById('extendOptions').classList.toggle('hidden'); }
+
+        async function completeExpiredGoal(action) {
+            const g = currentExpiredGoals[currentExpiredIndex];
+            const body = { action, self_rating: selectedExpiredRating };
+            if (action === 'extend') {
+                const weeks = parseInt(document.getElementById('extendWeeks').value);
+                if (!weeks || weeks < 1) { showMessage('Enter weeks to extend', 'error'); return; }
+                body.extend_weeks = weeks;
+            }
+            try {
+                const response = await fetch(`${API_BASE}/goals/techniques/${g.id}/complete`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify(body)
+                });
+                if (response.ok) {
+                    if (action === 'archive') {
+                        showMessage('Goal archived', 'success');
+                        currentExpiredIndex++;
+                        if (currentExpiredIndex >= currentExpiredGoals.length) {
+                            document.getElementById('expiredGoalModal').classList.remove('show');
+                            setTimeout(() => { showProfile(); showProfileTab('goals'); }, 500);
+                        } else { showNextExpiredGoal(); }
+                    } else if (action === 'complete') {
+                        showMessage('Goal completed!', 'success');
+                        currentExpiredIndex++;
+                        showNextExpiredGoal();
+                    } else if (action === 'extend') {
+                        showMessage(`Goal extended by ${body.extend_weeks} weeks`, 'success');
+                        currentExpiredIndex++;
+                        showNextExpiredGoal();
+                    }
+                    loadDashboardProgress();
+                    loadTechniqueGoalHistory();
+                } else { showMessage('Failed to update goal', 'error'); }
+            } catch(e) { showMessage('Connection error', 'error'); }
+        }
+
         function showGoalsMessage(message, type) {
             const messageDiv = document.getElementById('goalsMessage');
             messageDiv.innerHTML = `<div class="message ${type}">${message}</div>`;

@@ -15,8 +15,12 @@ Base.metadata.create_all(bind=engine)
 def run_migrations():
     with engine.connect() as conn:
         migrations = [
-            "ALTER TABLE entries ADD COLUMN IF NOT EXISTS injured_during_session BOOLEAN DEFAULT FALSE",
-            "ALTER TABLE entries ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP",
+            "ALTER TABLE entries ADD COLUMN injured_during_session BOOLEAN DEFAULT FALSE",
+            "ALTER TABLE entries ADD COLUMN updated_at TIMESTAMP",
+            "ALTER TABLE technique_goals ADD COLUMN timeline_weeks INTEGER",
+            "ALTER TABLE technique_goals ADD COLUMN status TEXT DEFAULT 'active'",
+            "ALTER TABLE technique_goals ADD COLUMN self_rating INTEGER",
+            "ALTER TABLE technique_goals ADD COLUMN completed_at TIMESTAMP",
         ]
         for sql in migrations:
             try:

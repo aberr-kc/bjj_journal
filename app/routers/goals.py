@@ -4,8 +4,8 @@ from sqlalchemy import and_, desc, func, Integer
 from datetime import date, datetime, timedelta
 from typing import List, Optional
 from app.database import get_db
-from app.models import User, UserGoal, WeeklyProgress, StreakHistory, Entry
-from app.schemas import UserGoalCreate, UserGoal as UserGoalSchema, WeeklyProgressCreate, WeeklyProgress as WeeklyProgressSchema, StreakHistory as StreakHistorySchema, CurrentStreakResponse
+from app.models import User, UserGoal, WeeklyProgress, StreakHistory, Entry, TechniqueGoal, Response, Question
+from app.schemas import UserGoalCreate, UserGoal as UserGoalSchema, WeeklyProgressCreate, WeeklyProgress as WeeklyProgressSchema, StreakHistory as StreakHistorySchema, CurrentStreakResponse, TechniqueGoalCreate, TechniqueGoalResponse, TechniqueGoalComplete
 from app.dependencies import get_current_user
 
 router = APIRouter(prefix="/goals", tags=["goals"])
@@ -354,3 +354,295 @@ def get_longest_streaks(
     return db.query(StreakHistory).filter(
         StreakHistory.user_id == current_user.id
     ).order_by(desc(StreakHistory.streak_length)).limit(limit).all()
+
+
+# --- Technique Goals ---
+
+@router.get("/techniques", response_model=List[TechniqueGoalResponse])
+def get_technique_goals(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Get user's active technique goals"""
+    return db.query(TechniqueGoal).filter(
+        and_(TechniqueGoal.user_id == current_user.id, TechniqueGoal.is_active == True)
+    ).order_by(TechniqueGoal.created_at).all()
+
+@router.post("/techniques", response_model=TechniqueGoalResponse)
+def create_technique_goal(
+    goal: TechniqueGoalCreate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Add a new technique goal"""
+    new_goal = TechniqueGoal(
+        user_id=current_user.id,
+        position=goal.position,
+        notes=goal.notes,
+        timeline_weeks=goal.timeline_weeks,
+        is_active=True
+    )
+    db.add(new_goal)
+    db.commit()
+    db.refresh(new_goal)
+    return new_goal
+
+@router.delete("/techniques/{goal_id}")
+def delete_technique_goal(
+    goal_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Archive a technique goal (soft delete)"""
+    goal = db.query(TechniqueGoal).filter(
+        and_(TechniqueGoal.id == goal_id, TechniqueGoal.user_id == current_user.id)
+    ).first()
+    if not goal:
+        raise HTTPException(status_code=404, detail="Technique goal not found")
+    goal.is_active = False
+    goal.status = "archived"
+    goal.completed_at = datetime.utcnow()
+    db.commit()
+    return {"message": "Technique goal archived"}
+
+
+@router.get("/techniques/progress")
+def get_technique_goals_progress(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Get progress data for each active technique goal."""
+    goals = db.query(TechniqueGoal).filter(
+        and_(TechniqueGoal.user_id == current_user.id, TechniqueGoal.is_active == True)
+    ).order_by(TechniqueGoal.created_at).all()
+
+    if not goals:
+        return []
+
+    results = []
+    for goal in goals:
+        created_at = goal.created_at
+        if created_at and created_at.tzinfo is not None:
+            created_at = created_at.replace(tzinfo=None)
+
+        # Count sessions that included this position since goal was created
+        session_count = db.query(func.count(func.distinct(Entry.id))).join(
+            Response, Response.entry_id == Entry.id
+        ).join(
+            Question, Response.question_id == Question.id
+        ).filter(
+            and_(
+                Entry.user_id == current_user.id,
+                Entry.date >= created_at,
+                Question.question_text == 'Class Technique',
+                Response.answer.like(f"{goal.position} - %")
+            )
+        ).scalar() or 0
+
+        # Find last trained date for this position
+        last_entry = db.query(func.max(Entry.date)).join(
+            Response, Response.entry_id == Entry.id
+        ).join(
+            Question, Response.question_id == Question.id
+        ).filter(
+            and_(
+                Entry.user_id == current_user.id,
+                Entry.date >= created_at,
+                Question.question_text == 'Class Technique',
+                Response.answer.like(f"{goal.position} - %")
+            )
+        ).scalar()
+
+        # Calculate weeks since goal created
+        now = datetime.utcnow()
+        days_elapsed = (now - created_at).days if created_at else 0
+        weeks_elapsed = max(1, round(days_elapsed / 7, 1))
+
+        # Calculate deadline info
+        days_left = None
+        total_days = None
+        if goal.timeline_weeks:
+            deadline = created_at + timedelta(weeks=goal.timeline_weeks)
+            days_left = (deadline - now).days
+            total_days = goal.timeline_weeks * 7
+
+        # Calculate weekly streak: consecutive weeks (current → past) with at least 1 session
+        current_week_start = get_week_start(date.today())
+        streak = 0
+        # Don't look further back than goal creation
+        goal_start_date = created_at.date() if created_at else date.today()
+        check_week = current_week_start
+        while check_week >= goal_start_date:
+            week_end = check_week + timedelta(days=6)
+            week_sessions = db.query(func.count(func.distinct(Entry.id))).join(
+                Response, Response.entry_id == Entry.id
+            ).join(
+                Question, Response.question_id == Question.id
+            ).filter(
+                and_(
+                    Entry.user_id == current_user.id,
+                    func.date(Entry.date) >= check_week,
+                    func.date(Entry.date) <= week_end,
+                    Question.question_text == 'Class Technique',
+                    Response.answer.like(f"{goal.position} - %")
+                )
+            ).scalar() or 0
+            if week_sessions > 0:
+                streak += 1
+            else:
+                break
+            check_week -= timedelta(days=7)
+
+        results.append({
+            "id": goal.id,
+            "position": goal.position,
+            "notes": goal.notes,
+            "timeline_weeks": goal.timeline_weeks,
+            "created_at": goal.created_at.isoformat() if goal.created_at else None,
+            "session_count": session_count,
+            "weeks_elapsed": weeks_elapsed,
+            "days_elapsed": days_elapsed,
+            "days_left": days_left,
+            "total_days": total_days,
+            "last_trained": last_entry.isoformat() if last_entry else None,
+            "sessions_per_week": round(session_count / weeks_elapsed, 1) if weeks_elapsed > 0 else 0,
+            "weekly_streak": streak,
+        })
+
+    return results
+
+
+@router.post("/techniques/{goal_id}/complete")
+def complete_technique_goal(
+    goal_id: int,
+    data: TechniqueGoalComplete,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Complete, archive, or extend a technique goal."""
+    goal = db.query(TechniqueGoal).filter(
+        and_(TechniqueGoal.id == goal_id, TechniqueGoal.user_id == current_user.id)
+    ).first()
+    if not goal:
+        raise HTTPException(status_code=404, detail="Technique goal not found")
+
+    if data.action == "complete":
+        goal.is_active = False
+        goal.status = "completed"
+        goal.self_rating = data.self_rating
+        goal.completed_at = datetime.utcnow()
+        db.commit()
+        return {"message": "Goal marked as completed", "status": "completed"}
+
+    elif data.action == "archive":
+        goal.is_active = False
+        goal.status = "archived"
+        goal.self_rating = data.self_rating
+        goal.completed_at = datetime.utcnow()
+        db.commit()
+        return {"message": "Goal archived", "status": "archived"}
+
+    elif data.action == "extend":
+        if not data.extend_weeks or data.extend_weeks < 1:
+            raise HTTPException(status_code=400, detail="extend_weeks must be at least 1")
+        goal.timeline_weeks = (goal.timeline_weeks or 0) + data.extend_weeks
+        db.commit()
+        return {"message": f"Goal extended by {data.extend_weeks} weeks", "status": "active"}
+
+    else:
+        raise HTTPException(status_code=400, detail="action must be complete, archive, or extend")
+
+
+@router.get("/techniques/expired")
+def get_expired_technique_goals(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Get active technique goals that have passed their deadline."""
+    goals = db.query(TechniqueGoal).filter(
+        and_(
+            TechniqueGoal.user_id == current_user.id,
+            TechniqueGoal.is_active == True,
+            TechniqueGoal.timeline_weeks.isnot(None)
+        )
+    ).all()
+
+    expired = []
+    now = datetime.utcnow()
+    for goal in goals:
+        created = goal.created_at
+        if created and created.tzinfo is not None:
+            created = created.replace(tzinfo=None)
+        if created and goal.timeline_weeks:
+            deadline = created + timedelta(weeks=goal.timeline_weeks)
+            if now > deadline:
+                expired.append({
+                    "id": goal.id,
+                    "position": goal.position,
+                    "timeline_weeks": goal.timeline_weeks,
+                    "notes": goal.notes,
+                    "created_at": goal.created_at.isoformat() if goal.created_at else None,
+                    "days_overdue": (now - deadline).days,
+                })
+
+    return expired
+
+@router.get("/techniques/history")
+def get_technique_goals_history(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Get completed/archived technique goals with session stats."""
+    goals = db.query(TechniqueGoal).filter(
+        and_(
+            TechniqueGoal.user_id == current_user.id,
+            TechniqueGoal.is_active == False,
+            TechniqueGoal.status.in_(["completed", "archived"])
+        )
+    ).order_by(TechniqueGoal.completed_at.desc()).all()
+
+    results = []
+    for goal in goals:
+        created = goal.created_at
+        completed = goal.completed_at
+        if created and created.tzinfo is not None:
+            created = created.replace(tzinfo=None)
+        if completed and completed.tzinfo is not None:
+            completed = completed.replace(tzinfo=None)
+
+        # Count sessions that included this position during the goal period
+        end_date = completed or datetime.utcnow()
+        session_count = db.query(func.count(func.distinct(Entry.id))).join(
+            Response, Response.entry_id == Entry.id
+        ).join(
+            Question, Response.question_id == Question.id
+        ).filter(
+            and_(
+                Entry.user_id == current_user.id,
+                Entry.date >= created,
+                Entry.date <= end_date,
+                Question.question_text == 'Class Technique',
+                Response.answer.like(f"{goal.position} - %")
+            )
+        ).scalar() or 0
+
+        # Duration in weeks
+        duration_days = (end_date - created).days if created else 0
+        duration_weeks = round(duration_days / 7, 1)
+
+        results.append({
+            "id": goal.id,
+            "position": goal.position,
+            "notes": goal.notes,
+            "timeline_weeks": goal.timeline_weeks,
+            "status": goal.status,
+            "self_rating": goal.self_rating,
+            "session_count": session_count,
+            "duration_weeks": duration_weeks,
+            "duration_days": duration_days,
+            "created_at": goal.created_at.isoformat() if goal.created_at else None,
+            "completed_at": goal.completed_at.isoformat() if goal.completed_at else None,
+        })
+
+    return results
+

@@ -149,6 +149,32 @@ class CurrentStreakResponse(BaseModel):
     current_week_rounds: Optional[int] = 0
     current_week_rounds_goal: Optional[int] = 0
 
+class TechniqueGoalCreate(BaseModel):
+    position: str
+    notes: Optional[str] = None
+    timeline_weeks: Optional[int] = None
+
+class TechniqueGoalComplete(BaseModel):
+    action: str  # "complete", "archive", "extend"
+    self_rating: Optional[int] = None  # 1-5
+    extend_weeks: Optional[int] = None
+
+class TechniqueGoalResponse(BaseModel):
+    id: int
+    user_id: int
+    position: str
+    notes: Optional[str]
+    timeline_weeks: Optional[int]
+    is_active: bool
+    status: Optional[str]
+    self_rating: Optional[int]
+    completed_at: Optional[datetime]
+    created_at: datetime
+    updated_at: Optional[datetime]
+    
+    class Config:
+        from_attributes = True
+
 class InjuryLogCreate(BaseModel):
     injured_area: str
     injury_date: date

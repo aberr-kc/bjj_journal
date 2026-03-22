@@ -17,6 +17,7 @@ class User(Base):
     weekly_progress = relationship("WeeklyProgress", back_populates="user")
     streak_history = relationship("StreakHistory", back_populates="user")
     injuries = relationship("InjuryLog", back_populates="user")
+    technique_goals = relationship("TechniqueGoal", back_populates="user")
 
 class UserProfile(Base):
     __tablename__ = "user_profiles"
@@ -110,6 +111,23 @@ class StreakHistory(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     
     user = relationship("User", back_populates="streak_history")
+
+class TechniqueGoal(Base):
+    __tablename__ = "technique_goals"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    position = Column(String, nullable=False)
+    notes = Column(Text, nullable=True)
+    timeline_weeks = Column(Integer, nullable=True)
+    is_active = Column(Boolean, default=True)
+    status = Column(String, default="active")  # active, completed, archived
+    self_rating = Column(Integer, nullable=True)  # 1-5
+    completed_at = Column(DateTime(timezone=True), nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    
+    user = relationship("User", back_populates="technique_goals")
 
 class InjuryLog(Base):
     __tablename__ = "injury_logs"
