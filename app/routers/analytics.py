@@ -261,11 +261,11 @@ def get_dashboard_stats(
         weekly_volume.reverse()  # Show oldest to newest
         
         # Rounds by session type
-        rounds_by_session_type = {"Gi": 0, "No Gi": 0, "Both": 0}
+        rounds_by_session_type = {"Gi": 0, "No Gi": 0}
         for entry in entries:
             entry_session_type = next((r.answer for r in responses if r.entry_id == entry.id and r.question and "Session Type" in r.question.question_text), None)
             entry_rounds = next((int(r.answer) for r in responses if r.entry_id == entry.id and r.question and "Rounds Rolled" in r.question.question_text and r.answer.isdigit()), 0)
-            if entry_session_type and entry_rounds:
+            if entry_session_type and entry_rounds and entry_session_type in rounds_by_session_type:
                 rounds_by_session_type[entry_session_type] += entry_rounds
         
         # RPE vs Rounds correlation data
