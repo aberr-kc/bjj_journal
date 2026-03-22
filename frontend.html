@@ -86,10 +86,10 @@
             background: #334155;
             border-left: 1px solid #475569;
             padding: 80px 20px 20px 20px;
-            transition: right 0.3s ease;
             z-index: 1000;
             overflow-y: auto;
         }
+        .nav-menu.animated { transition: right 0.3s ease; }
         .nav-menu.open { right: 0; }
         .nav-overlay {
             position: fixed;
@@ -1247,12 +1247,14 @@
         async function showMainApp() {
             document.getElementById('loginForm').classList.add('hidden');
             document.getElementById('mainApp').classList.remove('hidden');
+            closeMenu();
             await loadQuestions();
             await loadDashboard();
             await loadDashboardProgress();
             await checkActiveInjuries();
             await checkProfileOnLogin();
             await loadRecommendations();
+            document.getElementById('navMenu').classList.add('animated');
         }
 
         async function loadQuestions() {
@@ -3529,7 +3531,9 @@
         }
         
         function toggleMenu() {
-            document.getElementById('navMenu').classList.toggle('open');
+            const m = document.getElementById('navMenu');
+            m.classList.add('animated');
+            m.classList.toggle('open');
             document.getElementById('navOverlay').classList.toggle('show');
         }
         

@@ -13,7 +13,8 @@
         .logo { display: flex; align-items: center; cursor: pointer; flex-shrink: 0; }
         .hamburger { width: 28px; height: 22px; display: flex; flex-direction: column; justify-content: space-between; cursor: pointer; }
         .hamburger span { width: 100%; height: 3px; background: #00d4aa; border-radius: 2px; }
-        .nav-menu { position: fixed; top: 0; right: -280px; width: 260px; height: 100vh; background: #1a1f26; border-left: 1px solid #2a3038; padding: 70px 15px 15px; transition: right 0.3s ease; z-index: 1000; overflow-y: auto; }
+        .nav-menu { position: fixed; top: 0; right: -280px; width: 260px; height: 100vh; background: #1a1f26; border-left: 1px solid #2a3038; padding: 70px 15px 15px; z-index: 1000; overflow-y: auto; }
+        .nav-menu.animated { transition: right 0.3s ease; }
         .nav-menu.open { right: 0; }
         .nav-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; z-index: 999; }
         .nav-overlay.show { display: block; }
@@ -431,7 +432,7 @@
     function logout() { const u = document.getElementById('username')?.value; localStorage.removeItem('bjj_token'); if (u) clearCredentials(u); token = null; document.getElementById('loginForm').classList.remove('hidden'); document.getElementById('mainApp').classList.add('hidden'); }
 
     // --- Nav ---
-    function toggleMenu() { document.getElementById('navMenu').classList.add('open'); document.getElementById('navOverlay').classList.add('show'); }
+    function toggleMenu() { const m = document.getElementById('navMenu'); m.classList.add('animated'); m.classList.add('open'); document.getElementById('navOverlay').classList.add('show'); }
     function closeMenu() { document.getElementById('navMenu').classList.remove('open'); document.getElementById('navOverlay').classList.remove('show'); }
 
     // --- Main App ---
@@ -439,6 +440,7 @@
         document.getElementById('loginForm').classList.add('hidden'); document.getElementById('mainApp').classList.remove('hidden');
         closeMenu();
         await loadQuestions(); await loadDashboard(); await loadDashboardProgress(); await checkActiveInjuries(); await checkProfileOnLogin(); await loadRecommendations();
+        document.getElementById('navMenu').classList.add('animated');
     }
 
     // --- Sections ---
